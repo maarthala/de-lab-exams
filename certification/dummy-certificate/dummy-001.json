@@ -1,0 +1,403 @@
+{
+  "$schema": "../../../../schema/question-bank.schema.json",
+  "schema_version": "1.1",
+  "exam_id": "dummy-exam",
+  "source": "dummy3",
+  "case_studies": [
+    {
+      "id": "beanleaf",
+      "title": "Bean & Leaf Coffee",
+      "content": "**Bean & Leaf** is a coffee shop with two branches.\n\n| Branch | Opens | Closes | Staff |\n|---|---|---|---|\n| Downtown | 07:00 | 19:00 | 6 |\n| Riverside | 08:00 | 17:00 | 4 |\n\nThe owner wants to:\n\n1. Open the Riverside branch one hour earlier.\n2. Hire two more staff for Downtown.\n3. Start selling pastries at both branches."
+    }
+  ],
+  "questions": [
+    {
+      "id": "dummy3-001",
+      "source_number": 1,
+      "question": "Which three of these animals are mammals? (Choose three.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Dolphin"
+        },
+        {
+          "key": "B",
+          "text": "Shark"
+        },
+        {
+          "key": "C",
+          "text": "Bat"
+        },
+        {
+          "key": "D",
+          "text": "Penguin"
+        },
+        {
+          "key": "E",
+          "text": "Elephant"
+        },
+        {
+          "key": "F",
+          "text": "Frog"
+        }
+      ],
+      "answer": [
+        "A",
+        "C",
+        "E"
+      ],
+      "explanation": "Dolphins, bats and elephants are mammals. Sharks are fish, penguins are birds, and frogs are amphibians.",
+      "domain": "1.1",
+      "tags": [
+        "animals",
+        "multi-select"
+      ]
+    },
+    {
+      "id": "dummy3-002",
+      "source_number": 2,
+      "question": "You run the following query:\n\n```sql\nSELECT COUNT(*) AS n\nFROM fruits\nWHERE color = 'red';\n```\n\nThe `fruits` table contains: apple (red), banana (yellow), cherry (red), lime (green).\n\nWhat value is returned in `n`?",
+      "options": [
+        {
+          "key": "A",
+          "text": "1"
+        },
+        {
+          "key": "B",
+          "text": "2"
+        },
+        {
+          "key": "C",
+          "text": "3"
+        },
+        {
+          "key": "D",
+          "text": "4"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "Apple and cherry are red, so `COUNT(*)` returns **2**.",
+      "domain": "2",
+      "tags": [
+        "sql",
+        "code"
+      ]
+    },
+    {
+      "id": "dummy3-003",
+      "source_number": 3,
+      "question": "Given this JSON document:\n\n```json\n{\n  \"name\": \"Mia\",\n  \"pets\": [\"cat\", \"dog\", \"fish\"]\n}\n```\n\nHow many pets does Mia have?",
+      "options": [
+        {
+          "key": "A",
+          "text": "1"
+        },
+        {
+          "key": "B",
+          "text": "2"
+        },
+        {
+          "key": "C",
+          "text": "3"
+        },
+        {
+          "key": "D",
+          "text": "4"
+        }
+      ],
+      "answer": [
+        "C"
+      ],
+      "explanation": "The `pets` array has three items.",
+      "domain": "2",
+      "tags": [
+        "json",
+        "code"
+      ]
+    },
+    {
+      "id": "dummy3-004",
+      "source_number": 4,
+      "type": "drag-drop",
+      "question": "Sort each food into its group. Each value may be used once, more than once, or not at all.\n\n- Fruit: [Target1]\n- Vegetable: [Target2]",
+      "choice_pool": [
+        "Apple",
+        "Carrot",
+        "Banana",
+        "Broccoli",
+        "Bread"
+      ],
+      "slots": [
+        {
+          "id": "Target1",
+          "label": "Fruit",
+          "answer": [
+            "Apple",
+            "Banana"
+          ]
+        },
+        {
+          "id": "Target2",
+          "label": "Vegetable",
+          "answer": [
+            "Carrot",
+            "Broccoli"
+          ]
+        }
+      ],
+      "explanation": "Bread is neither a fruit nor a vegetable.",
+      "domain": "1.1",
+      "tags": [
+        "multi-value-target"
+      ]
+    },
+    {
+      "id": "dummy3-005",
+      "source_number": 5,
+      "case_study": "beanleaf",
+      "question": "After the owner's change, what time will the Riverside branch open?",
+      "options": [
+        {
+          "key": "A",
+          "text": "06:00"
+        },
+        {
+          "key": "B",
+          "text": "07:00"
+        },
+        {
+          "key": "C",
+          "text": "08:00"
+        },
+        {
+          "key": "D",
+          "text": "09:00"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "Riverside opens at 08:00 today; one hour earlier is 07:00.",
+      "domain": "2",
+      "tags": [
+        "case-study"
+      ]
+    },
+    {
+      "id": "dummy3-006",
+      "source_number": 6,
+      "case_study": "beanleaf",
+      "type": "yes-no",
+      "question": "For each of the following statements, select Yes if the statement is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "Downtown will have 8 staff after the hiring.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "Pastries will be sold only at Downtown.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "Riverside currently closes at 19:00.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        }
+      ],
+      "explanation": "6 + 2 = 8 staff; pastries go to both branches; Riverside closes at 17:00.",
+      "domain": "1",
+      "tags": [
+        "case-study"
+      ]
+    },
+    {
+      "id": "dummy3-007",
+      "source_number": 7,
+      "type": "drag-drop",
+      "question": "Arrange the planets in order of distance from the Sun, closest first. Move the appropriate planets to the answer area and arrange them in the correct order.\n\n[Step 1]\n[Step 2]\n[Step 3]\n[Step 4]",
+      "choice_pool": [
+        "Mars",
+        "Venus",
+        "Earth",
+        "Mercury",
+        "Pluto"
+      ],
+      "slots": [
+        {
+          "id": "Step 1",
+          "answer": [
+            "Mercury"
+          ]
+        },
+        {
+          "id": "Step 2",
+          "answer": [
+            "Venus"
+          ]
+        },
+        {
+          "id": "Step 3",
+          "answer": [
+            "Earth"
+          ]
+        },
+        {
+          "id": "Step 4",
+          "answer": [
+            "Mars"
+          ]
+        }
+      ],
+      "explanation": "Mercury, Venus, Earth, Mars. Pluto is a dwarf planet and a distractor.",
+      "domain": "1.1",
+      "tags": [
+        "ordering"
+      ],
+      "references": [
+        {
+          "title": "NASA: Solar System",
+          "url": "https://science.nasa.gov/solar-system/"
+        }
+      ]
+    },
+    {
+      "id": "dummy3-008",
+      "source_number": 8,
+      "question": "Which of these is the **largest** number?\n\n- *Hint:* compare the digits carefully.",
+      "options": [
+        {
+          "key": "A",
+          "text": "0.9"
+        },
+        {
+          "key": "B",
+          "text": "0.19"
+        },
+        {
+          "key": "C",
+          "text": "0.099"
+        },
+        {
+          "key": "D",
+          "text": "0.91"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "The source's answer is wrong; see the review block.",
+      "domain": "2",
+      "tags": [
+        "decimals"
+      ],
+      "review": {
+        "status": "corrected",
+        "answer": [
+          "D"
+        ],
+        "explanation": "0.91 > 0.9 > 0.19 > 0.099.",
+        "notes": "Test case: source marked A (0.9); the largest is D (0.91).",
+        "reviewed_on": "2026-10-30",
+        "references": [
+          {
+            "title": "Comparing decimals"
+          }
+        ]
+      }
+    },
+    {
+      "id": "dummy3-009",
+      "source_number": 9,
+      "type": "hotspot",
+      "question": "Complete the sentence.\n\nThe chemical symbol for gold is [Box1] and for iron is [Box2].",
+      "slots": [
+        {
+          "id": "Box1",
+          "choices": [
+            "Go",
+            "Au",
+            "Ag",
+            "Gd"
+          ],
+          "answer": [
+            "Au"
+          ]
+        },
+        {
+          "id": "Box2",
+          "choices": [
+            "Ir",
+            "In",
+            "Fe",
+            "I"
+          ],
+          "answer": [
+            "Fe"
+          ]
+        }
+      ],
+      "explanation": "Au comes from Latin *aurum*, Fe from *ferrum*.",
+      "domain": "1.1",
+      "tags": [
+        "chemistry"
+      ]
+    },
+    {
+      "id": "dummy3-010",
+      "source_number": 10,
+      "question": "Which continent has the most countries? [text garbled in source] ...",
+      "options": [
+        {
+          "key": "A",
+          "text": "Asia"
+        },
+        {
+          "key": "B",
+          "text": "Africa"
+        },
+        {
+          "key": "C",
+          "text": "Europe"
+        },
+        {
+          "key": "D",
+          "text": "S#uth Am3rica"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "Africa has 54 countries.",
+      "domain": "1.2",
+      "tags": [
+        "continents"
+      ],
+      "review": {
+        "status": "needs-fix",
+        "notes": "Test case: question text and option D are garbled; a portal may hide needs-fix questions from mock tests."
+      }
+    }
+  ]
+}
