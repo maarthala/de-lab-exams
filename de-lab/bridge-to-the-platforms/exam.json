@@ -1,0 +1,30 @@
+{
+  "schema_version": "1.0",
+  "id": "de-bridge-to-the-platforms",
+  "provider": "de-lab",
+  "name": "DE lab · Bridge to the platforms",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "OSS ⇄ Databricks / Snowflake / Fabric / Azure"
+    },
+    {
+      "id": "2",
+      "name": "Which platform for which job"
+    },
+    {
+      "id": "3",
+      "name": "Glossary"
+    }
+  ],
+  "sources": [
+    {
+      "id": "bridge-to-the-platforms",
+      "name": "Bridge to the platforms — DE lab course questions"
+    }
+  ]
+}

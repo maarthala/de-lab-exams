@@ -1,0 +1,74 @@
+{
+  "schema_version": "1.0",
+  "id": "de-snowflake",
+  "provider": "de-lab",
+  "name": "DE lab · Snowflake",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Your Snowflake trial & the ShopFlow data"
+    },
+    {
+      "id": "2",
+      "name": "The system views: Snowflake's own management tables"
+    },
+    {
+      "id": "3",
+      "name": "Snowflake SQL basics on ShopFlow"
+    },
+    {
+      "id": "4",
+      "name": "Architecture & virtual warehouses"
+    },
+    {
+      "id": "5",
+      "name": "Micro-partitions, pruning & caching"
+    },
+    {
+      "id": "6",
+      "name": "Cloning, Time Travel & table types"
+    },
+    {
+      "id": "7",
+      "name": "JSON (VARIANT)"
+    },
+    {
+      "id": "8",
+      "name": "Stages: upload & load files"
+    },
+    {
+      "id": "9",
+      "name": "Streams, tasks, SCD2 & dynamic tables"
+    },
+    {
+      "id": "10",
+      "name": "Roles, grants & data governance"
+    },
+    {
+      "id": "11",
+      "name": "Cost & monitoring"
+    },
+    {
+      "id": "12",
+      "name": "Snowpark — DataFrames in Snowflake"
+    },
+    {
+      "id": "13",
+      "name": "Functions & procedures"
+    },
+    {
+      "id": "14",
+      "name": "Clean up & checklist"
+    }
+  ],
+  "sources": [
+    {
+      "id": "snowflake",
+      "name": "Snowflake — DE lab course questions"
+    }
+  ]
+}

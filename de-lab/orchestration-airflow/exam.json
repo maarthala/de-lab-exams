@@ -1,0 +1,34 @@
+{
+  "schema_version": "1.0",
+  "id": "de-orchestration-airflow",
+  "provider": "de-lab",
+  "name": "DE lab · Orchestration (Airflow)",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Airflow basics"
+    },
+    {
+      "id": "2",
+      "name": "Build the medallion DAG"
+    },
+    {
+      "id": "3",
+      "name": "Schedule ingestion & Spark jobs"
+    },
+    {
+      "id": "4",
+      "name": "The development workflow (notebook → job → DAG)"
+    }
+  ],
+  "sources": [
+    {
+      "id": "orchestration-airflow",
+      "name": "Orchestration (Airflow) — DE lab course questions"
+    }
+  ]
+}

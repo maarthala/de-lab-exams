@@ -1,0 +1,365 @@
+{
+  "schema_version": "1.1",
+  "exam_id": "de-foundations",
+  "source": "foundations",
+  "questions": [
+    {
+      "id": "foundations-001",
+      "question": "ShopFlow lands raw data in the lakehouse first and transforms it there afterwards, in layers. Which approach is this? (one answer)",
+      "options": [
+        {
+          "key": "A",
+          "text": "ETL — transform on a separate engine, then load"
+        },
+        {
+          "key": "B",
+          "text": "ELT — load the raw data first, then transform it in place"
+        },
+        {
+          "key": "C",
+          "text": "CDC — read the database's change log"
+        },
+        {
+          "key": "D",
+          "text": "OLTP — process many small transactions"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "**ELT** loads the raw data first and transforms it with the lakehouse's own compute, so a raw copy is always kept. Bronze *is* the loaded raw zone; Silver and Gold are the transform steps.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "elt",
+        "etl"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-002",
+      "type": "yes-no",
+      "question": "For each statement, select Yes if it is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "An OLTP database is usually normalized: many small linked tables.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "OLAP systems are usually row-oriented, to scan one column over millions of rows fast.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "Running heavy reports on the production database can slow down the live app for customers.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        }
+      ],
+      "explanation": "OLTP runs the business: normalized and row-oriented. OLAP understands it: denormalized and **column**-oriented. Big analytical scans on the live database compete with customers' transactions, which is why analytics runs on a separate system.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "oltp",
+        "olap"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-003",
+      "question": "Which **three** layers make up a lakehouse? (Choose three.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Object storage (Parquet files on S3 / RustFS)"
+        },
+        {
+          "key": "B",
+          "text": "An open table format (Delta or Iceberg)"
+        },
+        {
+          "key": "C",
+          "text": "A catalog (e.g. Apache Polaris)"
+        },
+        {
+          "key": "D",
+          "text": "A proprietary storage engine that couples storage and compute"
+        },
+        {
+          "key": "E",
+          "text": "A separate data warehouse holding a copy of the Gold tables"
+        }
+      ],
+      "answer": [
+        "A",
+        "B",
+        "C"
+      ],
+      "explanation": "A lakehouse = **object storage** + an **open table format** + a **catalog**. Storage and compute stay separate, and Bronze and Gold live in the same place: no separate warehouse copy.",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "lakehouse"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-004",
+      "type": "drag-drop",
+      "question": "Match each storage system to how it applies a schema.\n\n| System | Schema |\n|---|---|\n| Data warehouse | [Warehouse] |\n| Data lake (plain files) | [Lake] |",
+      "choice_pool": [
+        "Schema-on-write",
+        "Schema-on-read",
+        "No schema at all, ever"
+      ],
+      "slots": [
+        {
+          "id": "Warehouse",
+          "answer": [
+            "Schema-on-write"
+          ]
+        },
+        {
+          "id": "Lake",
+          "answer": [
+            "Schema-on-read"
+          ]
+        }
+      ],
+      "explanation": "A warehouse needs data to fit a fixed schema **before** loading (schema-on-write). A lake stores files of any shape and applies structure only **when you query** (schema-on-read).",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "schema-on-read",
+        "schema-on-write"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-005",
+      "question": "A query on a Parquet table with 50 columns uses only 2 of them, and the engine physically reads only those 2. What is this called? (one answer)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Predicate pushdown"
+        },
+        {
+          "key": "B",
+          "text": "Projection pushdown"
+        },
+        {
+          "key": "C",
+          "text": "Partitioning"
+        },
+        {
+          "key": "D",
+          "text": "Compaction (OPTIMIZE)"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "**Projection pushdown** reads only the columns a query needs, possible because Parquet is columnar. **Predicate pushdown** is different: it skips row groups whose min/max stats can't match a filter.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "parquet",
+        "pushdown"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-006",
+      "question": "A folder of Parquet files becomes a Delta or Iceberg table. Which **two** abilities does the table format add that plain Parquet files lack? (Choose two.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Columnar storage"
+        },
+        {
+          "key": "B",
+          "text": "ACID transactions: a write fully happens or not at all"
+        },
+        {
+          "key": "C",
+          "text": "Compression of similar values"
+        },
+        {
+          "key": "D",
+          "text": "Time travel: query the table as it was at an earlier version"
+        },
+        {
+          "key": "E",
+          "text": "Min/max statistics per row group"
+        }
+      ],
+      "answer": [
+        "B",
+        "D"
+      ],
+      "explanation": "The table format's **transaction log** adds ACID, MERGE / update / delete, **time travel** and schema evolution. Columnar layout, compression and row-group statistics are Parquet's own features.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "table-format",
+        "parquet"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-007",
+      "type": "drag-drop",
+      "question": "Match each description to its medallion layer.\n\n| Description | Layer |\n|---|---|\n| An exact, append-only copy of the sources: keep everything | [Raw copy] |\n| Cleaned, deduplicated, conformed: the single source of truth | [Clean model] |\n| Aggregated marts that answer business questions directly | [Business marts] |",
+      "choice_pool": [
+        "Bronze",
+        "Silver",
+        "Gold"
+      ],
+      "slots": [
+        {
+          "id": "Raw copy",
+          "answer": [
+            "Bronze"
+          ]
+        },
+        {
+          "id": "Clean model",
+          "answer": [
+            "Silver"
+          ]
+        },
+        {
+          "id": "Business marts",
+          "answer": [
+            "Gold"
+          ]
+        }
+      ],
+      "explanation": "**Bronze** keeps the raw data as it arrived, **Silver** makes it clean and conformed, **Gold** shapes it for BI and ML.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "medallion"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-008",
+      "question": "Months after go-live you find a bug in the Silver transform. How do you fix Silver and Gold **without** fetching the data from the sources again? (one answer)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Restore yesterday's Gold backup"
+        },
+        {
+          "key": "B",
+          "text": "Rebuild Silver and Gold from the raw Bronze tables with the fixed logic"
+        },
+        {
+          "key": "C",
+          "text": "Ask the source teams to resend six months of data"
+        },
+        {
+          "key": "D",
+          "text": "Patch the Gold numbers by hand"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "That is why Bronze keeps **everything**, even bad or duplicate rows: it is the replay buffer. Fix the logic and rebuild Silver and Gold from Bronze; no re-ingest is needed.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "medallion",
+        "reprocessing"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-009",
+      "question": "The fact table has `profit` and `revenue` per order line, and a `margin_pct` column. What is the correct margin for a whole month? (one answer)",
+      "options": [
+        {
+          "key": "A",
+          "text": "`avg(margin_pct)`"
+        },
+        {
+          "key": "B",
+          "text": "`sum(margin_pct)`"
+        },
+        {
+          "key": "C",
+          "text": "`sum(profit) / sum(revenue)`"
+        },
+        {
+          "key": "D",
+          "text": "`max(margin_pct)`"
+        }
+      ],
+      "answer": [
+        "C"
+      ],
+      "explanation": "A percentage is **non-additive**: never sum or average it. Keep its parts as additive measures and divide **at query time**: `sum(profit) / sum(revenue)`.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "additivity",
+        "measures"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-010",
+      "question": "An order line in `fact_sales` refers to a `product_sk` that has no row in `dim_product`. The report joins them with an `INNER JOIN`. What happens? (one answer)",
+      "options": [
+        {
+          "key": "A",
+          "text": "The query fails with a foreign-key error"
+        },
+        {
+          "key": "B",
+          "text": "The line's revenue lands in a \"(null)\" category"
+        },
+        {
+          "key": "C",
+          "text": "The line is silently dropped, so product totals come out too low"
+        },
+        {
+          "key": "D",
+          "text": "Trino adds the missing product automatically"
+        }
+      ],
+      "answer": [
+        "C"
+      ],
+      "explanation": "An `INNER JOIN` silently drops the orphaned line, so its revenue vanishes and **nothing errors**. Point unknown keys at an **\"Unknown\" member** (e.g. `-1`) instead, and run an orphan check that should return 0.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "referential-integrity",
+        "star-schema"
+      ],
+      "difficulty": "hard"
+    }
+  ]
+}

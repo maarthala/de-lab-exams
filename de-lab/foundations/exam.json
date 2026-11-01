@@ -1,0 +1,38 @@
+{
+  "schema_version": "1.0",
+  "id": "de-foundations",
+  "provider": "de-lab",
+  "name": "DE lab · Foundations",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "What is Data Engineering"
+    },
+    {
+      "id": "2",
+      "name": "Lake vs Warehouse vs Lakehouse"
+    },
+    {
+      "id": "3",
+      "name": "File & table formats"
+    },
+    {
+      "id": "4",
+      "name": "Medallion architecture"
+    },
+    {
+      "id": "5",
+      "name": "Dimensional modeling (facts & dimensions)"
+    }
+  ],
+  "sources": [
+    {
+      "id": "foundations",
+      "name": "Foundations — DE lab course questions"
+    }
+  ]
+}

@@ -1,0 +1,140 @@
+{
+  "schema_version": "1.0",
+  "id": "de-google-cloud",
+  "provider": "de-lab",
+  "name": "DE lab · Google Cloud",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "GCP & BigQuery knowledge",
+      "subdomains": [
+        {
+          "id": "1.1",
+          "name": "BigQuery from the inside"
+        },
+        {
+          "id": "1.2",
+          "name": "Data warehouse modelling"
+        },
+        {
+          "id": "1.3",
+          "name": "Pub/Sub and Dataflow"
+        },
+        {
+          "id": "1.4",
+          "name": "Datastream and CDC"
+        },
+        {
+          "id": "1.5",
+          "name": "Cloud Composer and Airflow"
+        },
+        {
+          "id": "1.6",
+          "name": "Dataform and dbt"
+        },
+        {
+          "id": "1.7",
+          "name": "GCP platform, IAM and Terraform"
+        },
+        {
+          "id": "1.8",
+          "name": "Looker and the semantic layer"
+        },
+        {
+          "id": "1.9",
+          "name": "Migration and EDW modernization"
+        }
+      ]
+    },
+    {
+      "id": "2",
+      "name": "Practical implementation: ShopFlow on GCP",
+      "subdomains": [
+        {
+          "id": "2.1",
+          "name": "Your Google Cloud trial & project"
+        },
+        {
+          "id": "2.2",
+          "name": "Cloud Storage: land the ShopFlow files"
+        },
+        {
+          "id": "2.3",
+          "name": "BigQuery: Bronze from your files"
+        },
+        {
+          "id": "2.4",
+          "name": "Apache Beam basics: write and run pipelines"
+        },
+        {
+          "id": "2.5",
+          "name": "Dataflow: clean orders into Silver"
+        },
+        {
+          "id": "2.6",
+          "name": "Notebook: build Gold in BigQuery Studio"
+        },
+        {
+          "id": "2.7",
+          "name": "Composer: orchestrate the pipeline"
+        },
+        {
+          "id": "2.8",
+          "name": "A small report in Looker Studio"
+        },
+        {
+          "id": "2.9",
+          "name": "Cost & clean up"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Deep dives",
+      "subdomains": [
+        {
+          "id": "3.1",
+          "name": "BigQuery"
+        },
+        {
+          "id": "3.2",
+          "name": "Data warehouse modelling"
+        },
+        {
+          "id": "3.3",
+          "name": "Streaming and CDC"
+        },
+        {
+          "id": "3.4",
+          "name": "Composer, Airflow and Dataform"
+        },
+        {
+          "id": "3.5",
+          "name": "Platform, IAM and Terraform"
+        },
+        {
+          "id": "3.6",
+          "name": "Migration and modernization"
+        },
+        {
+          "id": "3.7",
+          "name": "Looker and the semantic layer"
+        },
+        {
+          "id": "3.8",
+          "name": "Engineering practices"
+        }
+      ]
+    }
+  ],
+  "sources": [
+    {
+      "id": "google-cloud",
+      "name": "Google Cloud — DE lab course questions"
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "schema_version": "1.0",
+  "id": "de-transform-with-dbt",
+  "provider": "de-lab",
+  "name": "DE lab · Transform with dbt",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Why dbt"
+    },
+    {
+      "id": "2",
+      "name": "Your first dbt project"
+    },
+    {
+      "id": "3",
+      "name": "Sources and staging models"
+    },
+    {
+      "id": "4",
+      "name": "Models, ref() and materializations"
+    },
+    {
+      "id": "5",
+      "name": "Tests and seeds"
+    },
+    {
+      "id": "6",
+      "name": "Incremental models"
+    },
+    {
+      "id": "7",
+      "name": "Jinja and macros"
+    },
+    {
+      "id": "8",
+      "name": "Snapshots: keep history"
+    },
+    {
+      "id": "9",
+      "name": "Docs and lineage"
+    },
+    {
+      "id": "10",
+      "name": "Run dbt from Airflow"
+    },
+    {
+      "id": "11",
+      "name": "Challenge: a tested Gold mart in dbt"
+    }
+  ],
+  "sources": [
+    {
+      "id": "transform-with-dbt",
+      "name": "Transform with dbt — DE lab course questions"
+    }
+  ]
+}

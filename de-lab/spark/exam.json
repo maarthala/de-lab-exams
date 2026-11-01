@@ -1,0 +1,68 @@
+{
+  "schema_version": "1.0",
+  "id": "de-spark",
+  "provider": "de-lab",
+  "name": "DE lab · Spark",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Spark fundamentals"
+    },
+    {
+      "id": "2",
+      "name": "Read the lake (Bronze)",
+      "subdomains": [
+        {
+          "id": "2.1",
+          "name": "Data cleaning (messy Bronze → clean Silver)"
+        }
+      ]
+    },
+    {
+      "id": "3",
+      "name": "Transform to Silver"
+    },
+    {
+      "id": "4",
+      "name": "Spark SQL & aggregates (Gold)"
+    },
+    {
+      "id": "5",
+      "name": "Materialized views"
+    },
+    {
+      "id": "6",
+      "name": "Challenge: build a Gold mart"
+    },
+    {
+      "id": "7",
+      "name": "Table maintenance (OPTIMIZE, Z-order, VACUUM)"
+    },
+    {
+      "id": "8",
+      "name": "Spark performance & tuning"
+    },
+    {
+      "id": "9",
+      "name": "How Spark runs (architecture & query lifecycle)"
+    },
+    {
+      "id": "10",
+      "name": "Data skew & salting"
+    },
+    {
+      "id": "11",
+      "name": "Partitions: coalesce & repartition"
+    }
+  ],
+  "sources": [
+    {
+      "id": "spark",
+      "name": "Spark — DE lab course questions"
+    }
+  ]
+}

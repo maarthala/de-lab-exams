@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "id": "de-python-notebook",
+  "provider": "de-lab",
+  "name": "DE lab · Python — Notebook",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Python & notebooks for DE"
+    },
+    {
+      "id": "2",
+      "name": "pandas"
+    },
+    {
+      "id": "3",
+      "name": "NumPy"
+    },
+    {
+      "id": "4",
+      "name": "PyArrow & Parquet"
+    },
+    {
+      "id": "5",
+      "name": "Consuming APIs (requests)"
+    },
+    {
+      "id": "6",
+      "name": "SQL from Python (Postgres & lakehouse)"
+    },
+    {
+      "id": "7",
+      "name": "Spark from a notebook"
+    },
+    {
+      "id": "8",
+      "name": "Query tables with %%sql"
+    },
+    {
+      "id": "9",
+      "name": "Upload a file & register it as a table"
+    }
+  ],
+  "sources": [
+    {
+      "id": "python-notebook",
+      "name": "Python — Notebook — DE lab course questions"
+    }
+  ]
+}

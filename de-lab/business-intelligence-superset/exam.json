@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "id": "de-business-intelligence-superset",
+  "provider": "de-lab",
+  "name": "DE lab · Business intelligence (Superset)",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Dashboards from the Gold layer"
+    }
+  ],
+  "sources": [
+    {
+      "id": "business-intelligence-superset",
+      "name": "Business intelligence (Superset) — DE lab course questions"
+    }
+  ]
+}

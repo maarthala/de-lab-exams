@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0",
+  "id": "de-sql-on-big-data",
+  "provider": "de-lab",
+  "name": "DE lab · SQL on big data",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "Query the lake with Trino"
+    },
+    {
+      "id": "2",
+      "name": "Joins & aggregations"
+    },
+    {
+      "id": "3",
+      "name": "Window functions"
+    },
+    {
+      "id": "4",
+      "name": "CTEs & complex analytics"
+    },
+    {
+      "id": "5",
+      "name": "Views"
+    },
+    {
+      "id": "6",
+      "name": "Conditional logic, NULLs & filtering"
+    },
+    {
+      "id": "7",
+      "name": "Functions (built-in, lambdas & your own)"
+    },
+    {
+      "id": "8",
+      "name": "MERGE & upserts"
+    },
+    {
+      "id": "9",
+      "name": "Semi-structured data (JSON)"
+    },
+    {
+      "id": "10",
+      "name": "Challenge: cohort report"
+    },
+    {
+      "id": "11",
+      "name": "Challenge: AdventureWorks"
+    },
+    {
+      "id": "12",
+      "name": "Join pitfalls"
+    }
+  ],
+  "sources": [
+    {
+      "id": "sql-on-big-data",
+      "name": "SQL on big data — DE lab course questions"
+    }
+  ]
+}

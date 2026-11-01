@@ -1,0 +1,54 @@
+{
+  "schema_version": "1.0",
+  "id": "de-data-vault-2-0",
+  "provider": "de-lab",
+  "name": "DE lab · Data Vault 2.0",
+  "exam_format": {
+    "question_count": 20,
+    "passing_score_percent": 70
+  },
+  "domains": [
+    {
+      "id": "1",
+      "name": "What is Data Vault 2.0?"
+    },
+    {
+      "id": "2",
+      "name": "Meet ShopFlow's three sources"
+    },
+    {
+      "id": "3",
+      "name": "Design the ShopFlow vault"
+    },
+    {
+      "id": "4",
+      "name": "Stage the sources: business keys & hashes"
+    },
+    {
+      "id": "5",
+      "name": "Load the hubs and links"
+    },
+    {
+      "id": "6",
+      "name": "Load the satellites"
+    },
+    {
+      "id": "7",
+      "name": "Day 2: changes arrive, history builds up"
+    },
+    {
+      "id": "8",
+      "name": "Business Vault & information marts"
+    },
+    {
+      "id": "9",
+      "name": "Automate it & challenge"
+    }
+  ],
+  "sources": [
+    {
+      "id": "data-vault-2-0",
+      "name": "Data Vault 2.0 — DE lab course questions"
+    }
+  ]
+}
