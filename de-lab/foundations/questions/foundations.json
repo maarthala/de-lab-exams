@@ -2,82 +2,32 @@
   "schema_version": "1.1",
   "exam_id": "de-foundations",
   "source": "foundations",
-  "enabled": false,
-  "disabled_reason": "WIP",
   "questions": [
     {
       "id": "foundations-001",
-      "question": "ShopFlow lands raw data in the lakehouse first and transforms it there afterwards, in layers. Which approach is this? (one answer)",
+      "question": "ShopFlow's finance team runs a month-end revenue report directly against the production Postgres database. On the last day of each month, customers complain that checkout is slow while the report runs. The report must still be refreshed daily, and checkout performance must not be affected.\n\nWhat should you do?",
       "options": [
         {
           "key": "A",
-          "text": "ETL — transform on a separate engine, then load"
+          "text": "Add more indexes to the `orders` table so the report runs faster"
         },
         {
           "key": "B",
-          "text": "ELT — load the raw data first, then transform it in place"
+          "text": "Copy the order data into the lakehouse on a schedule and run the report there"
         },
         {
           "key": "C",
-          "text": "CDC — read the database's change log"
+          "text": "Run the report at 2 am so fewer customers are affected"
         },
         {
           "key": "D",
-          "text": "OLTP — process many small transactions"
+          "text": "Give the finance team a read-only user on the production database"
         }
       ],
       "answer": [
         "B"
       ],
-      "explanation": "**ELT** loads the raw data first and transforms it with the lakehouse's own compute, so a raw copy is always kept. Bronze *is* the loaded raw zone; Silver and Gold are the transform steps.",
-      "domain": "1",
-      "domain_name": "What is Data Engineering",
-      "tags": [
-        "elt",
-        "etl"
-      ],
-      "difficulty": "easy"
-    },
-    {
-      "id": "foundations-002",
-      "type": "yes-no",
-      "question": "For each statement, select Yes if it is true. Otherwise, select No.",
-      "slots": [
-        {
-          "id": "Statement 1",
-          "label": "An OLTP database is usually normalized: many small linked tables.",
-          "choices": [
-            "Yes",
-            "No"
-          ],
-          "answer": [
-            "Yes"
-          ]
-        },
-        {
-          "id": "Statement 2",
-          "label": "OLAP systems are usually row-oriented, to scan one column over millions of rows fast.",
-          "choices": [
-            "Yes",
-            "No"
-          ],
-          "answer": [
-            "No"
-          ]
-        },
-        {
-          "id": "Statement 3",
-          "label": "Running heavy reports on the production database can slow down the live app for customers.",
-          "choices": [
-            "Yes",
-            "No"
-          ],
-          "answer": [
-            "Yes"
-          ]
-        }
-      ],
-      "explanation": "OLTP runs the business: normalized and row-oriented. OLAP understands it: denormalized and **column**-oriented. Big analytical scans on the live database compete with customers' transactions, which is why analytics runs on a separate system.",
+      "explanation": "A heavy analytical query on the OLTP database slows down the live app and is slow itself, because the database is laid out for small transactions. Moving the data into a separate OLAP system (the lakehouse) protects checkout. A, C and D all still run the heavy query on production.",
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -87,45 +37,574 @@
       "difficulty": "medium"
     },
     {
-      "id": "foundations-003",
-      "question": "Which **three** layers make up a lakehouse? (Choose three.)",
+      "id": "foundations-002",
+      "question": "ShopFlow wants to keep an untouched copy of everything it receives, and to use the lakehouse's own compute to clean and aggregate the data afterwards, in successive layers.\n\nWhich approach meets these requirements?",
       "options": [
         {
           "key": "A",
-          "text": "Object storage (Parquet files on S3 / RustFS)"
+          "text": "ETL — transform on a separate engine, then load the result"
         },
         {
           "key": "B",
-          "text": "An open table format (Delta or Iceberg)"
+          "text": "ELT — load the raw data first, then transform it in place"
         },
         {
           "key": "C",
-          "text": "A catalog (e.g. Apache Polaris)"
+          "text": "OLTP — process many small transactions"
         },
         {
           "key": "D",
-          "text": "A proprietary storage engine that couples storage and compute"
+          "text": "Full load — copy every table again each night"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "**ELT** loads the raw data first and transforms it with the lakehouse's own compute, so the raw copy is kept. ETL transforms before loading and often keeps no raw copy.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "elt",
+        "etl"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-003",
+      "question": "An Airflow task that loads yesterday's orders failed halfway and was retried. The `daily_sales` mart now shows some orders twice. The team wants re-runs of any task to be safe from now on.\n\nWhich property must the pipeline have?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Idempotent: re-running it produces the same result, with no duplicates"
+        },
+        {
+          "key": "B",
+          "text": "Incremental: it copies only what changed since the last run"
+        },
+        {
+          "key": "C",
+          "text": "Lineage: it records where each piece of data came from"
+        },
+        {
+          "key": "D",
+          "text": "Streaming: it processes events continuously"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "A pipeline is **idempotent** when re-running it produces the same result. Retries and backfills then never create duplicates.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "idempotent",
+        "orchestration"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-004",
+      "question": "ShopFlow receives customers from three sources. One calls the key `cust_id`, another `customer`, and a CSV file uses `CustomerID` with no types at all. Analysts need one customer table they can join to orders.\n\nWhich transform step addresses this?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Deduplicate"
+        },
+        {
+          "key": "B",
+          "text": "Conform the schemas onto one shared model"
+        },
+        {
+          "key": "C",
+          "text": "Aggregate and apply business logic"
+        },
+        {
+          "key": "D",
+          "text": "Serve the data through a data mart"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "**Conforming schemas** maps each source's columns onto one shared model, so `cust_id`, `customer` and `CustomerID` all become one `customer_id`. Sources disagree, and reconciling them is a big part of the job.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "schema-conforming",
+        "transform"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-005",
+      "question": "The ShopFlow `orders` table has grown to hundreds of millions of rows. Copying the whole table every night now takes too long. The team needs every insert, update and delete as it happens, read from the database's change log.\n\nWhich ingestion method should you use?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Full load"
+        },
+        {
+          "key": "B",
+          "text": "Batch export to CSV"
+        },
+        {
+          "key": "C",
+          "text": "Change Data Capture (CDC)"
+        },
+        {
+          "key": "D",
+          "text": "Schema-on-read"
+        }
+      ],
+      "answer": [
+        "C"
+      ],
+      "explanation": "**CDC** is a smart form of incremental load: it reads the database's change log to capture every insert, update and delete as it happens. A full load copies the entire table every time.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "cdc",
+        "ingest"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-006",
+      "question": "A new engineer suggests transforming ShopFlow's data straight from the source systems, without first landing an untouched copy in a staging (raw) zone.\n\nWhich **two** benefits would the team lose? (Choose two.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Re-running transforms without fetching from the live source again"
+        },
+        {
+          "key": "B",
+          "text": "An audit trail of exactly what arrived"
+        },
+        {
+          "key": "C",
+          "text": "Faster dashboards for executives"
+        },
+        {
+          "key": "D",
+          "text": "Automatic removal of duplicate rows"
         },
         {
           "key": "E",
-          "text": "A separate data warehouse holding a copy of the Gold tables"
+          "text": "Encryption of the data at rest"
         }
       ],
       "answer": [
         "A",
-        "B",
+        "B"
+      ],
+      "explanation": "The landing zone keeps an exact copy of what arrived, so you can **re-run transforms** without hammering the live source again and **audit** what came in. It doesn't clean data or speed up dashboards by itself.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "staging",
+        "raw-zone"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-007",
+      "type": "drag-drop",
+      "question": "ShopFlow needs answers at two speeds. Match each need to the processing speed that fits it.\n\n| Need | Speed |\n|---|---|\n| Block a fraudulent checkout while it happens | [Fraud check] |\n| The trustworthy daily picture of how the business is doing | [Daily picture] |\n| Rescue an abandoned cart in the moment | [Abandoned cart] |",
+      "choice_pool": [
+        "Batch",
+        "Streaming"
+      ],
+      "slots": [
+        {
+          "id": "Fraud check",
+          "answer": [
+            "Streaming"
+          ]
+        },
+        {
+          "id": "Daily picture",
+          "answer": [
+            "Batch"
+          ]
+        },
+        {
+          "id": "Abandoned cart",
+          "answer": [
+            "Streaming"
+          ]
+        }
+      ],
+      "explanation": "**Batch** processes data in chunks on a schedule and builds the daily, trustworthy picture. **Streaming** processes events continuously, so you can act in the moment.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "batch",
+        "streaming"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-008",
+      "type": "drag-drop",
+      "question": "ShopFlow's governance work has four parts. Match each request to the governance discipline that answers it.\n\n| Request | Discipline |\n|---|---|\n| \"Which tables do we have, and what is in them?\" | [Request 1] |\n| \"Where did the numbers in this report come from?\" | [Request 2] |\n| \"Only finance may see the margin table.\" | [Request 3] |\n| \"Stop the load if an order has no customer.\" | [Request 4] |",
+      "choice_pool": [
+        "Catalog",
+        "Lineage",
+        "Access control (RBAC)",
+        "Data quality checks"
+      ],
+      "slots": [
+        {
+          "id": "Request 1",
+          "answer": [
+            "Catalog"
+          ]
+        },
+        {
+          "id": "Request 2",
+          "answer": [
+            "Lineage"
+          ]
+        },
+        {
+          "id": "Request 3",
+          "answer": [
+            "Access control (RBAC)"
+          ]
+        },
+        {
+          "id": "Request 4",
+          "answer": [
+            "Data quality checks"
+          ]
+        }
+      ],
+      "explanation": "Governance means knowing **what** data you have (catalog), **where it came from** (lineage), **who may see it** (access control) and **whether it's correct** (data quality).",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "governance",
+        "lineage",
+        "catalog"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-009",
+      "type": "yes-no",
+      "question": "ShopFlow is moving its nightly scripts into an orchestrator.\n\nFor each statement, select Yes if it is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "Orchestration is a stage that runs only at the end of the pipeline.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "Pipelines are usually modelled as a DAG of dependent tasks.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "A backfill reprocesses historical data.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        }
+      ],
+      "explanation": "Orchestration and governance wrap the **whole** flow; they aren't a stage at the end. The orchestrator runs a **DAG** of tasks in order, on a schedule, with retries, and **backfills** reprocess history.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "orchestration",
+        "dag"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-010",
+      "type": "drag-drop",
+      "question": "Put the core steps of a ShopFlow pipeline in order, from the source systems to the people who use the data.\n\n1. [Step 1]\n2. [Step 2]\n3. [Step 3]\n4. [Step 4]",
+      "choice_pool": [
+        "Ingest",
+        "Store",
+        "Transform",
+        "Serve"
+      ],
+      "slots": [
+        {
+          "id": "Step 1",
+          "answer": [
+            "Ingest"
+          ]
+        },
+        {
+          "id": "Step 2",
+          "answer": [
+            "Store"
+          ]
+        },
+        {
+          "id": "Step 3",
+          "answer": [
+            "Transform"
+          ]
+        },
+        {
+          "id": "Step 4",
+          "answer": [
+            "Serve"
+          ]
+        }
+      ],
+      "explanation": "Get data out of the sources (**ingest**), land it durably (**store**), clean and shape it (**transform**), then expose it (**serve**). Orchestration and governance run across all of these steps.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "pipeline",
+        "five-steps"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-011",
+      "question": "ShopFlow's data scientists want clean, ready-made inputs for training and scoring a churn model. Executives already have their dashboards.\n\nWhich way of serving data fits the data scientists?",
+      "options": [
+        {
+          "key": "A",
+          "text": "A feature store"
+        },
+        {
+          "key": "B",
+          "text": "The staging / raw zone"
+        },
+        {
+          "key": "C",
+          "text": "A connector such as JDBC"
+        },
+        {
+          "key": "D",
+          "text": "The OLTP database"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Serving makes finished data usable: data marts and dashboards for BI, a **feature store** with clean features for ML, and APIs for apps. The raw zone holds untouched data, not model-ready features.",
+      "domain": "1",
+      "domain_name": "What is Data Engineering",
+      "tags": [
+        "serve",
+        "feature-store"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-012",
+      "question": "ShopFlow wants to keep clickstream JSON, product images and order tables cheaply in open files. It also needs ACID transactions, `MERGE` for late updates, and fast SQL for BI, and data scientists want to read the same raw files.\n\nWhich architecture meets all these requirements?",
+      "options": [
+        {
+          "key": "A",
+          "text": "A classic data warehouse"
+        },
+        {
+          "key": "B",
+          "text": "A plain data lake"
+        },
+        {
+          "key": "C",
+          "text": "A lakehouse"
+        },
+        {
+          "key": "D",
+          "text": "The OLTP database"
+        }
+      ],
+      "answer": [
         "C"
       ],
-      "explanation": "A lakehouse = **object storage** + an **open table format** + a **catalog**. Storage and compute stay separate, and Bronze and Gold live in the same place: no separate warehouse copy.",
+      "explanation": "A **lakehouse** keeps the lake's cheap, open storage and adds the warehouse's guarantees (ACID, MERGE, time travel, governance) through a table format and a catalog. That makes it good for both BI and ML.",
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
         "lakehouse"
       ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-013",
+      "question": "A company has dumped files into object storage for years. Nobody knows which files are current, there is no schema enforcement, and nobody trusts the numbers.\n\nWhat has the lake become, and what turns it into a lakehouse?",
+      "options": [
+        {
+          "key": "A",
+          "text": "A data swamp; add an open table format and a catalog on top of the files"
+        },
+        {
+          "key": "B",
+          "text": "A data swamp; move every file into the OLTP database"
+        },
+        {
+          "key": "C",
+          "text": "A data warehouse; add more storage"
+        },
+        {
+          "key": "D",
+          "text": "A data mart; delete the old files"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "On its own a lake is just files, and without discipline it rots into a **data swamp**. A **table format** (ACID, schema) and a **catalog** (discovery, access control) turn the files into reliable tables.",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "data-swamp",
+        "table-format",
+        "catalog"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-014",
+      "type": "drag-drop",
+      "question": "Match each ShopFlow component to the lakehouse layer it provides.\n\n| Component | Layer |\n|---|---|\n| RustFS holding Parquet files | [RustFS] |\n| Iceberg tables | [Iceberg] |\n| Apache Polaris | [Polaris] |",
+      "choice_pool": [
+        "Object storage",
+        "Open table format",
+        "Catalog & governance"
+      ],
+      "slots": [
+        {
+          "id": "RustFS",
+          "answer": [
+            "Object storage"
+          ]
+        },
+        {
+          "id": "Iceberg",
+          "answer": [
+            "Open table format"
+          ]
+        },
+        {
+          "id": "Polaris",
+          "answer": [
+            "Catalog & governance"
+          ]
+        }
+      ],
+      "explanation": "ShopFlow's lakehouse maps one-to-one onto the three layers: **RustFS** (S3-compatible object storage), **Iceberg** (table format) and **Apache Polaris** (catalog with RBAC).",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "lakehouse",
+        "polaris",
+        "iceberg",
+        "rustfs"
+      ],
       "difficulty": "easy"
     },
     {
-      "id": "foundations-004",
+      "id": "foundations-015",
+      "question": "A ShopFlow customer asks for their data to be erased. Their orders are spread across thousands of Parquet files in a plain data lake.\n\nWhich lakehouse capability makes this a simple operation?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Row-level updates and deletes through the table format"
+        },
+        {
+          "key": "B",
+          "text": "Schema-on-read"
+        },
+        {
+          "key": "C",
+          "text": "Columnar compression"
+        },
+        {
+          "key": "D",
+          "text": "Separating storage and compute"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Plain files can't change individual rows. A table format adds **updates, deletes and MERGE**, which are needed for GDPR deletes, corrections and CDC.",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "gdpr",
+        "table-format"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-016",
+      "type": "yes-no",
+      "question": "ShopFlow is comparing the three kinds of analytical storage.\n\nFor each statement, select Yes if it is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "A plain data lake gives you ACID transactions.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "A lakehouse stores its data in open file formats.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "A classic data warehouse usually separates storage and compute.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        }
+      ],
+      "explanation": "A lake on its own has no ACID. A lakehouse keeps open formats and adds ACID through a table format. Classic warehouses **couple** storage and compute, so you pay for both together.",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "warehouse",
+        "lake",
+        "lakehouse"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-017",
       "type": "drag-drop",
       "question": "Match each storage system to how it applies a schema.\n\n| System | Schema |\n|---|---|\n| Data warehouse | [Warehouse] |\n| Data lake (plain files) | [Lake] |",
       "choice_pool": [
@@ -157,8 +636,73 @@
       "difficulty": "medium"
     },
     {
-      "id": "foundations-005",
-      "question": "A query on a Parquet table with 50 columns uses only 2 of them, and the engine physically reads only those 2. What is this called? (one answer)",
+      "id": "foundations-018",
+      "question": "Last night's load wrote wrong prices into a ShopFlow table, and this morning's Gold report is wrong. You need to see the table exactly as it was before the load.\n\nWhich feature do you use?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Time travel to an earlier version"
+        },
+        {
+          "key": "B",
+          "text": "Schema evolution"
+        },
+        {
+          "key": "C",
+          "text": "Partitioning"
+        },
+        {
+          "key": "D",
+          "text": "Schema-on-read"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "**Time travel** queries a table as it was at an earlier version or time, so you can reproduce a report or roll back a bad load.",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "time-travel"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-019",
+      "question": "ShopFlow analysts can't find the tables they need, and today everyone can read every table. The team wants one `catalog.schema.table` namespace, discovery, and per-table access control.\n\nWhich lakehouse layer provides this?",
+      "options": [
+        {
+          "key": "A",
+          "text": "The catalog (Apache Polaris)"
+        },
+        {
+          "key": "B",
+          "text": "The object storage (RustFS)"
+        },
+        {
+          "key": "C",
+          "text": "The Parquet file format"
+        },
+        {
+          "key": "D",
+          "text": "The query engine (Trino)"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "The **catalog** is the directory of all tables plus governance: a `catalog.schema.table` namespace, access control, discovery and lineage. Query engines are interchangeable and sit above it.",
+      "domain": "2",
+      "domain_name": "Lake vs Warehouse vs Lakehouse",
+      "tags": [
+        "catalog",
+        "rbac"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-020",
+      "question": "A ShopFlow analyst queries a Parquet table with 50 columns, but the query uses only `order_date` and `amount`. The engine physically reads only those two columns.\n\nWhat is this called?",
       "options": [
         {
           "key": "A",
@@ -180,7 +724,7 @@
       "answer": [
         "B"
       ],
-      "explanation": "**Projection pushdown** reads only the columns a query needs, possible because Parquet is columnar. **Predicate pushdown** is different: it skips row groups whose min/max stats can't match a filter.",
+      "explanation": "**Projection pushdown** reads only the columns a query needs, which is possible because Parquet is columnar. Predicate pushdown is different: it skips chunks that can't match a filter.",
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -190,45 +734,318 @@
       "difficulty": "medium"
     },
     {
-      "id": "foundations-006",
-      "question": "A folder of Parquet files becomes a Delta or Iceberg table. Which **two** abilities does the table format add that plain Parquet files lack? (Choose two.)",
+      "id": "foundations-021",
+      "question": "A query on ShopFlow's order history filters `WHERE country = 'UK'`. The engine skips whole chunks of each Parquet file without reading them.\n\nWhat makes this possible?",
       "options": [
         {
           "key": "A",
-          "text": "Columnar storage"
+          "text": "Min/max statistics stored per row group"
         },
         {
           "key": "B",
-          "text": "ACID transactions: a write fully happens or not at all"
+          "text": "Projection pushdown"
         },
         {
           "key": "C",
-          "text": "Compression of similar values"
+          "text": "Schema-on-read"
         },
         {
           "key": "D",
-          "text": "Time travel: query the table as it was at an earlier version"
+          "text": "The OLTP database's indexes"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Each Parquet row group stores min/max statistics, so the engine can **skip** chunks that can't match the filter. This is predicate pushdown, or data skipping.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "parquet",
+        "data-skipping"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-022",
+      "question": "ShopFlow stores daily order exports as Parquet files in object storage. Late-arriving updates to existing orders arrive every night and must replace the old rows. Auditors also need to reproduce last Monday's sales report exactly as it was shown.\n\nWhich **two** capabilities do you need, which plain Parquet files do not provide? (Choose two.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Columnar storage with compression"
+        },
+        {
+          "key": "B",
+          "text": "Row-level `MERGE` / upsert in a single atomic operation"
+        },
+        {
+          "key": "C",
+          "text": "Min/max statistics per row group"
+        },
+        {
+          "key": "D",
+          "text": "Time travel to an earlier table version"
         },
         {
           "key": "E",
-          "text": "Min/max statistics per row group"
+          "text": "A schema embedded in each file"
         }
       ],
       "answer": [
         "B",
         "D"
       ],
-      "explanation": "The table format's **transaction log** adds ACID, MERGE / update / delete, **time travel** and schema evolution. Columnar layout, compression and row-group statistics are Parquet's own features.",
+      "explanation": "A table format (Delta or Iceberg) adds a transaction log, which gives atomic **MERGE** and **time travel**. Columnar storage, compression, row-group statistics and the embedded schema are Parquet's own features.",
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
         "table-format",
+        "merge",
+        "time-travel"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-023",
+      "question": "Analysts average the `price` column over 50 million ShopFlow orders, stored as CSV. The query is slow and storage costs are high.\n\nWhich **two** reasons explain why converting to Parquet helps? (Choose two.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "It is columnar, so the query reads only the columns it needs"
+        },
+        {
+          "key": "B",
+          "text": "Similar values sit together, so encodings compress them much better"
+        },
+        {
+          "key": "C",
+          "text": "It is row-based, so each whole record is kept together"
+        },
+        {
+          "key": "D",
+          "text": "It removes the need for a schema"
+        },
+        {
+          "key": "E",
+          "text": "It turns the files into an ACID table"
+        }
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "Parquet is **columnar**: a query reads only the columns it uses, and similar values sitting together **compress** far better. Being row-based is CSV's layout, and ACID comes from a table format, not from Parquet.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "parquet",
+        "csv"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-024",
+      "question": "ShopFlow partitioned its events table so finely that it now has millions of tiny files, and queries got slower.\n\nWhat is the problem, and how do you fix it?",
+      "options": [
+        {
+          "key": "A",
+          "text": "The small-files problem; compact the files with OPTIMIZE"
+        },
+        {
+          "key": "B",
+          "text": "Schema drift; enable schema evolution"
+        },
+        {
+          "key": "C",
+          "text": "Data skew; switch the files to CSV"
+        },
+        {
+          "key": "D",
+          "text": "An orphan key; add an Unknown member"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Over-partitioning creates the **small-files problem**: millions of tiny files. Compaction (`OPTIMIZE`) merges them into fewer, bigger ones.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "partitioning",
+        "small-files",
+        "optimize"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-025",
+      "question": "ShopFlow writes its tables from Spark as Delta. Trino must read the same tables as Iceberg, and the team doesn't want to keep two copies of the data.\n\nWhat should you use?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Delta with UniForm enabled"
+        },
+        {
+          "key": "B",
+          "text": "Convert every table to CSV"
+        },
+        {
+          "key": "C",
+          "text": "Write a second copy as Iceberg every night"
+        },
+        {
+          "key": "D",
+          "text": "Partition the tables by date"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "**UniForm** publishes Iceberg metadata for the same Delta files, so one physical table is readable as Delta (Spark) and as Iceberg (Trino). That is how this course writes its tables.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "uniform",
+        "delta",
+        "iceberg"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-026",
+      "type": "drag-drop",
+      "question": "Match each ShopFlow need to the file format that fits it best.\n\n| Need | Format |\n|---|---|\n| Analytics over millions of order rows | [Analytics] |\n| Nested events from the website's API | [API events] |\n| Write-heavy streaming records with a schema | [Streaming records] |\n| A small file a person opens to eyeball | [Small file] |",
+      "choice_pool": [
+        "Parquet",
+        "JSON",
+        "Avro",
+        "CSV"
+      ],
+      "slots": [
+        {
+          "id": "Analytics",
+          "answer": [
+            "Parquet"
+          ]
+        },
+        {
+          "id": "API events",
+          "answer": [
+            "JSON"
+          ]
+        },
+        {
+          "id": "Streaming records",
+          "answer": [
+            "Avro"
+          ]
+        },
+        {
+          "id": "Small file",
+          "answer": [
+            "CSV"
+          ]
+        }
+      ],
+      "explanation": "**Parquet** is the analytics default (columnar, typed, compressed). **JSON** fits nested, semi-structured data and APIs. **Avro** is row-based with a schema, for write-heavy and streaming records. **CSV** is for tiny data and human eyeballing.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "file-formats",
+        "avro",
         "parquet"
       ],
       "difficulty": "medium"
     },
     {
-      "id": "foundations-007",
+      "id": "foundations-027",
+      "type": "yes-no",
+      "question": "ShopFlow's orders are stored as a Delta table.\n\nFor each statement, select Yes if it is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "The table's data files are ordinary Parquet files.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "Every write appends a new version to the transaction log.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "Without a table format, a folder of Parquet files can update a single row atomically.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        }
+      ],
+      "explanation": "A table format adds a transaction log over Parquet files: each write appends a new version recording the schema and the exact files. A plain folder of Parquet files can't update a single row atomically.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "transaction-log",
+        "delta"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-028",
+      "type": "drag-drop",
+      "question": "Match each description to its table format.\n\n| Description | Format |\n|---|---|\n| A JSON transaction log (`_delta_log`) over Parquet; Databricks-native | [Description 1] |\n| Snapshot-based metadata (manifests); engine-agnostic, hidden partitioning | [Description 2] |\n| Focused on streaming upserts | [Description 3] |",
+      "choice_pool": [
+        "Delta Lake",
+        "Apache Iceberg",
+        "Apache Hudi"
+      ],
+      "slots": [
+        {
+          "id": "Description 1",
+          "answer": [
+            "Delta Lake"
+          ]
+        },
+        {
+          "id": "Description 2",
+          "answer": [
+            "Apache Iceberg"
+          ]
+        },
+        {
+          "id": "Description 3",
+          "answer": [
+            "Apache Hudi"
+          ]
+        }
+      ],
+      "explanation": "**Delta Lake** keeps a JSON log in `_delta_log`. **Iceberg** uses snapshots and manifests and is fully engine-agnostic. **Hudi** focuses on streaming upserts.",
+      "domain": "3",
+      "domain_name": "File & table formats",
+      "tags": [
+        "delta",
+        "iceberg",
+        "hudi"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-029",
       "type": "drag-drop",
       "question": "Match each description to its medallion layer.\n\n| Description | Layer |\n|---|---|\n| An exact, append-only copy of the sources: keep everything | [Raw copy] |\n| Cleaned, deduplicated, conformed: the single source of truth | [Clean model] |\n| Aggregated marts that answer business questions directly | [Business marts] |",
       "choice_pool": [
@@ -256,7 +1073,7 @@
           ]
         }
       ],
-      "explanation": "**Bronze** keeps the raw data as it arrived, **Silver** makes it clean and conformed, **Gold** shapes it for BI and ML.",
+      "explanation": "**Bronze** keeps the raw data as it arrived, **Silver** makes it clean and conformed, and **Gold** shapes it for BI and ML.",
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -265,8 +1082,8 @@
       "difficulty": "easy"
     },
     {
-      "id": "foundations-008",
-      "question": "Months after go-live you find a bug in the Silver transform. How do you fix Silver and Gold **without** fetching the data from the sources again? (one answer)",
+      "id": "foundations-030",
+      "question": "Months after go-live, you find a bug in ShopFlow's Silver transform. Silver and Gold must be fixed **without** fetching the data from the sources again.\n\nWhat should you do?",
       "options": [
         {
           "key": "A",
@@ -288,7 +1105,7 @@
       "answer": [
         "B"
       ],
-      "explanation": "That is why Bronze keeps **everything**, even bad or duplicate rows: it is the replay buffer. Fix the logic and rebuild Silver and Gold from Bronze; no re-ingest is needed.",
+      "explanation": "Bronze keeps **everything**, even bad or duplicate rows, so it is the replay buffer. Fix the logic and rebuild Silver and Gold from Bronze; no re-ingest is needed.",
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -298,8 +1115,311 @@
       "difficulty": "medium"
     },
     {
-      "id": "foundations-009",
-      "question": "The fact table has `profit` and `revenue` per order line, and a `margin_pct` column. What is the correct margin for a whole month? (one answer)",
+      "id": "foundations-031",
+      "question": "ShopFlow is setting up access to its lakehouse layers. Analysts build dashboards, and engineers maintain the transforms.\n\nWhich grants follow the medallion guidance?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Analysts get Gold only; engineers work in Silver; Bronze stays restricted"
+        },
+        {
+          "key": "B",
+          "text": "Analysts get Bronze so they can see all the raw detail"
+        },
+        {
+          "key": "C",
+          "text": "Everyone gets every layer, to keep it simple"
+        },
+        {
+          "key": "D",
+          "text": "Analysts get Silver; Gold is restricted to engineers"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Medallion also helps access control: analysts are granted **Gold** only, engineers work in **Silver**, and **Bronze** stays restricted.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "medallion",
+        "access-control"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-032",
+      "type": "yes-no",
+      "question": "A new team member is learning ShopFlow's medallion layers.\n\nFor each statement, select Yes if it is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "Bronze keeps bad and duplicate rows from the sources.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "Bronze adds a little ingestion metadata, such as when a row arrived and from which file.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "Gold is the single source of truth.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        }
+      ],
+      "explanation": "Bronze keeps everything plus a little ingestion metadata. **Silver** is the single source of truth; Gold holds aggregated, business-ready marts.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "bronze",
+        "silver",
+        "gold"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-033",
+      "question": "Updated and late-arriving ShopFlow orders arrive every day. They must replace the earlier versions of those orders in the clean, trusted orders table.\n\nIn which layer, and with which operation, is this done?",
+      "options": [
+        {
+          "key": "A",
+          "text": "In Silver, with MERGE"
+        },
+        {
+          "key": "B",
+          "text": "In Bronze, by deleting the old rows"
+        },
+        {
+          "key": "C",
+          "text": "In Gold, by summing both versions"
+        },
+        {
+          "key": "D",
+          "text": "In the OLTP database, with a report"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Silver is where updates and late-arriving records are **merged** (`MERGE`, a table-format feature). Bronze stays append-only.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "silver",
+        "merge",
+        "late-arriving"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-034",
+      "question": "The ShopFlow CEO wants a small, fast table of daily sales, net of returns, for an executive dashboard.\n\nIn which layer does this table belong?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Bronze"
+        },
+        {
+          "key": "B",
+          "text": "Silver"
+        },
+        {
+          "key": "C",
+          "text": "Gold"
+        },
+        {
+          "key": "D",
+          "text": "The staging zone"
+        }
+      ],
+      "answer": [
+        "C"
+      ],
+      "explanation": "**Gold** holds aggregated, purpose-built tables (marts) that answer business questions directly, such as `daily_sales` net of returns.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "gold",
+        "marts"
+      ],
+      "difficulty": "easy"
+    },
+    {
+      "id": "foundations-035",
+      "type": "drag-drop",
+      "question": "ShopFlow applies the medallion layers to its real-time event stream. Match each streaming task to its layer.\n\n| Streaming task | Layer |\n|---|---|\n| Capture the raw events as they arrive | [Task 1] |\n| Clean and sessionise the events | [Task 2] |\n| Keep a live orders-per-minute aggregate | [Task 3] |",
+      "choice_pool": [
+        "Bronze",
+        "Silver",
+        "Gold"
+      ],
+      "slots": [
+        {
+          "id": "Task 1",
+          "answer": [
+            "Bronze"
+          ]
+        },
+        {
+          "id": "Task 2",
+          "answer": [
+            "Silver"
+          ]
+        },
+        {
+          "id": "Task 3",
+          "answer": [
+            "Gold"
+          ]
+        }
+      ],
+      "explanation": "The same three tiers work for streaming: **Bronze** captures the raw stream, **Silver** cleans and sessionises it, and **Gold** keeps live aggregates. It runs continuously instead of on a schedule.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "medallion",
+        "streaming"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-036",
+      "question": "ShopFlow's architects are discussing how strictly to follow the medallion pattern.\n\nWhich **two** statements match the course's guidance? (Choose two.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Adding a landing zone before Bronze is acceptable"
+        },
+        {
+          "key": "B",
+          "text": "Bronze, Silver and Gold are Databricks' own terms for the pattern"
+        },
+        {
+          "key": "C",
+          "text": "There must always be exactly three layers"
+        },
+        {
+          "key": "D",
+          "text": "Gold should keep a raw copy of every source row"
+        },
+        {
+          "key": "E",
+          "text": "Silver is the layer analysts should query directly"
+        }
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "Three layers is the common default, not a law: teams may add a landing zone before Bronze or extra Gold marts. **Medallion** is Databricks' own term. Raw copies belong in Bronze, and analysts get Gold.",
+      "domain": "4",
+      "domain_name": "Medallion architecture",
+      "tags": [
+        "medallion"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-037",
+      "type": "drag-drop",
+      "question": "ShopFlow is designing its Gold sales mart. The head of sales asks for *\"revenue and units sold by product category, by month, for customers in the west region.\"* Place each column in the table it belongs to.\n\n| Column | Table |\n|---|---|\n| `line_revenue` | [Box 1] |\n| `category` | [Box 2] |\n| `region` | [Box 3] |\n| `month_name` | [Box 4] |",
+      "choice_pool": [
+        "fact_sales",
+        "dim_product",
+        "dim_customer",
+        "dim_date"
+      ],
+      "slots": [
+        {
+          "id": "Box 1",
+          "answer": [
+            "fact_sales"
+          ]
+        },
+        {
+          "id": "Box 2",
+          "answer": [
+            "dim_product"
+          ]
+        },
+        {
+          "id": "Box 3",
+          "answer": [
+            "dim_customer"
+          ]
+        },
+        {
+          "id": "Box 4",
+          "answer": [
+            "dim_date"
+          ]
+        }
+      ],
+      "explanation": "Numbers go in **facts**, context goes in **dimensions**. The measure you sum (revenue) is in the fact; every \"by …\" is a dimension attribute: category on the product, region on the customer, month on the date.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "star-schema",
+        "facts",
+        "dimensions"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-038",
+      "question": "A ShopFlow analyst joins the `orders` table (one row per order, with `orders.total`) to `order_items` (one row per order line) and sums `orders.total`. Revenue comes out far too high.\n\nWhat went wrong?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Two grains were mixed, so each order total was counted once per line"
+        },
+        {
+          "key": "B",
+          "text": "The date dimension is missing"
+        },
+        {
+          "key": "C",
+          "text": "`orders.total` is a semi-additive measure"
+        },
+        {
+          "key": "D",
+          "text": "The dimensions should have been snowflaked"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "This is the **fan-out** trap: joining a one-row-per-order table to a one-row-per-line table counts an order-level number once per line. One fact table = one grain; order-level and line-level facts need **two** fact tables.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "grain",
+        "fan-out"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-039",
+      "question": "ShopFlow's fact table has `profit` and `revenue` per order line, and a `margin_pct` column.\n\nWhat is the correct margin for a whole month?",
       "options": [
         {
           "key": "A",
@@ -321,7 +1441,7 @@
       "answer": [
         "C"
       ],
-      "explanation": "A percentage is **non-additive**: never sum or average it. Keep its parts as additive measures and divide **at query time**: `sum(profit) / sum(revenue)`.",
+      "explanation": "A percentage is **non-additive**: never sum or average it. Keep its parts as additive measures and divide at query time: `sum(profit) / sum(revenue)`.",
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -331,8 +1451,41 @@
       "difficulty": "hard"
     },
     {
-      "id": "foundations-010",
-      "question": "An order line in `fact_sales` refers to a `product_sk` that has no row in `dim_product`. The report joins them with an `INNER JOIN`. What happens? (one answer)",
+      "id": "foundations-040",
+      "question": "A ShopFlow warehouse table stores `units_on_hand` per product per day. A manager wants one inventory figure for March.\n\nHow should you aggregate it?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Sum the daily values across March"
+        },
+        {
+          "key": "B",
+          "text": "Take the latest value (or an average) across the days, not the sum"
+        },
+        {
+          "key": "C",
+          "text": "Count the number of days"
+        },
+        {
+          "key": "D",
+          "text": "Multiply by the number of products"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "Inventory on hand is **semi-additive**: it adds up across products but **not across time**. Take the latest value or an average for the period.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "semi-additive",
+        "measures"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-041",
+      "question": "An order line in `fact_sales` refers to a `product_sk` that has no row in `dim_product`. The product report joins them with an `INNER JOIN`.\n\nWhat happens?",
       "options": [
         {
           "key": "A",
@@ -354,7 +1507,7 @@
       "answer": [
         "C"
       ],
-      "explanation": "An `INNER JOIN` silently drops the orphaned line, so its revenue vanishes and **nothing errors**. Point unknown keys at an **\"Unknown\" member** (e.g. `-1`) instead, and run an orphan check that should return 0.",
+      "explanation": "An `INNER JOIN` silently drops the orphaned line: its revenue vanishes and **nothing errors**. A `LEFT JOIN` would instead put it in a \"(null)\" bucket.",
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -362,6 +1515,345 @@
         "star-schema"
       ],
       "difficulty": "hard"
+    },
+    {
+      "id": "foundations-042",
+      "question": "Some ShopFlow order lines arrive with a product key that is missing or unknown. Finance requires that the totals still add up and that the mystery revenue is visible.\n\nWhat should you do?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Leave the foreign key NULL"
+        },
+        {
+          "key": "B",
+          "text": "Point those lines at an \"Unknown\" member in the dimension (e.g. surrogate key -1)"
+        },
+        {
+          "key": "C",
+          "text": "Drop those lines before loading"
+        },
+        {
+          "key": "D",
+          "text": "Use INNER JOINs in every report"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "Never leave a foreign key NULL. Point missing keys at a dedicated **Unknown member**, so facts never orphan, the total still adds up, and the revenue is visibly attributed to \"Unknown\".",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "unknown-member",
+        "referential-integrity"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-043",
+      "question": "Customer Ada (`customer_id` C-7) lived in Delhi until June 2024 and then moved to Mumbai. `dim_customer` holds two rows for her: `customer_sk` 41 (Delhi, valid to 2024-06-30) and 88 (Mumbai, valid from 2024-07-01). Each sale stores the `customer_sk` that was current at the time of the sale.\n\nWhich city does a sale from March 2024 show in \"revenue by city\"?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Mumbai, her current city"
+        },
+        {
+          "key": "B",
+          "text": "Delhi, the city she lived in at the time of the sale"
+        },
+        {
+          "key": "C",
+          "text": "Both cities, half each"
+        },
+        {
+          "key": "D",
+          "text": "Neither, because the natural key is C-7"
+        }
+      ],
+      "answer": [
+        "B"
+      ],
+      "explanation": "The March sale stored `customer_sk = 41`, so it forever joins to **Delhi**. Surrogate keys with SCD Type 2 rows are what make \"revenue by the city the customer lived in at the time\" possible.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "surrogate-key",
+        "scd2"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-044",
+      "question": "Every ShopFlow report re-derives quarters, fiscal periods, weekends and holidays with its own date logic, and the reports disagree on what \"Q1\" means.\n\nWhat should you build?",
+      "options": [
+        {
+          "key": "A",
+          "text": "A date dimension with one row per day and the calendar pre-computed"
+        },
+        {
+          "key": "B",
+          "text": "A second fact table for dates"
+        },
+        {
+          "key": "C",
+          "text": "A Parquet partition for every holiday"
+        },
+        {
+          "key": "D",
+          "text": "A view over the OLTP database"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "A **date dimension** has one row per day with year, quarter, month, weekend and holiday flags computed **once**. Date questions become plain `GROUP BY`s with one shared definition of \"Q1\".",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "date-dimension"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-045",
+      "type": "drag-drop",
+      "question": "Match each query change on ShopFlow's sales star to the OLAP cube operation it performs.\n\n| Query | Operation |\n|---|---|\n| `WHERE region = 'west'` | [Query 1] |\n| `WHERE region IN (…) AND month BETWEEN …` | [Query 2] |\n| `GROUP BY category`, from `GROUP BY category, subcategory, product_name` | [Query 3] |\n| `GROUP BY year, month, day`, from `GROUP BY year` | [Query 4] |",
+      "choice_pool": [
+        "Slice",
+        "Dice",
+        "Roll-up",
+        "Drill-down"
+      ],
+      "slots": [
+        {
+          "id": "Query 1",
+          "answer": [
+            "Slice"
+          ]
+        },
+        {
+          "id": "Query 2",
+          "answer": [
+            "Dice"
+          ]
+        },
+        {
+          "id": "Query 3",
+          "answer": [
+            "Roll-up"
+          ]
+        },
+        {
+          "id": "Query 4",
+          "answer": [
+            "Drill-down"
+          ]
+        }
+      ],
+      "explanation": "**Slice** fixes one dimension to one value; **dice** picks a sub-range on several dimensions; **roll-up** aggregates up a hierarchy (coarser); **drill-down** goes to finer detail.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "olap-cube",
+        "roll-up",
+        "drill-down"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-046",
+      "question": "ShopFlow's `dim_product` was split into `dim_product` → `dim_subcategory` → `dim_category`. Analysts now complain that every product report needs extra joins.\n\nWhich **two** reasons support flattening it back into a star? (Choose two.)",
+      "options": [
+        {
+          "key": "A",
+          "text": "Fewer joins and simpler queries"
+        },
+        {
+          "key": "B",
+          "text": "Small, flat dimensions can be broadcast cheaply to every worker"
+        },
+        {
+          "key": "C",
+          "text": "It removes the need for a fact table"
+        },
+        {
+          "key": "D",
+          "text": "Iceberg requires a star schema"
+        },
+        {
+          "key": "E",
+          "text": "It keeps each fact in exactly one place"
+        }
+      ],
+      "answer": [
+        "A",
+        "B"
+      ],
+      "explanation": "A **star** keeps each dimension flat, so queries need fewer joins, and small flat dimensions broadcast cheaply. Prefer the star unless a dimension is genuinely huge or shared in a way that forces normalization.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "star",
+        "snowflake-schema"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-047",
+      "question": "ShopFlow's sales report and returns report disagree on how many customers there are in the west region. Each fact table has its own customer table, built differently.\n\nWhat should you do?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Build one conformed `dim_customer` and reuse it for both facts"
+        },
+        {
+          "key": "B",
+          "text": "Add a date dimension"
+        },
+        {
+          "key": "C",
+          "text": "Snowflake both customer tables"
+        },
+        {
+          "key": "D",
+          "text": "Merge the sales and returns facts into one fact table with mixed grains"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "A **conformed dimension** is a single dimension reused by every fact, so \"customer\" means the same thing in every report and numbers reconcile across the business.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "conformed-dimension"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-048",
+      "type": "yes-no",
+      "question": "ShopFlow is reviewing the shape of its fact and dimension tables.\n\nFor each statement, select Yes if it is true. Otherwise, select No.",
+      "slots": [
+        {
+          "id": "Statement 1",
+          "label": "A fact table is usually tall and narrow: many rows, few columns.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 2",
+          "label": "Fact rows are usually updated when a customer moves city.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "No"
+          ]
+        },
+        {
+          "id": "Statement 3",
+          "label": "Dimension tables are usually short and wide: few rows, many descriptive columns.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        },
+        {
+          "id": "Statement 4",
+          "label": "Dimension tables mostly change through updates, such as a customer moving city.",
+          "choices": [
+            "Yes",
+            "No"
+          ],
+          "answer": [
+            "Yes"
+          ]
+        }
+      ],
+      "explanation": "Facts record immutable events: they are append-only and tall & narrow. Dimensions describe things: they are short & wide and mostly change through **updates**. A customer moving changes the dimension, not the old facts.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "facts",
+        "dimensions"
+      ],
+      "difficulty": "medium"
+    },
+    {
+      "id": "foundations-049",
+      "question": "Some ShopFlow order lines arrive before the new product they reference has been loaded into `dim_product`.\n\nHow should you handle these facts?",
+      "options": [
+        {
+          "key": "A",
+          "text": "Stage them against the Unknown member, and re-point them once the product row lands"
+        },
+        {
+          "key": "B",
+          "text": "Delete them"
+        },
+        {
+          "key": "C",
+          "text": "Load them with a NULL product key"
+        },
+        {
+          "key": "D",
+          "text": "Stop loading facts until next week"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "Load dimensions before facts whenever possible. For a **late-arriving dimension**, stage the fact against the Unknown member, then re-point it once the dimension row arrives.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "late-arriving-dimension",
+        "load-order"
+      ],
+      "difficulty": "hard"
+    },
+    {
+      "id": "foundations-050",
+      "question": "You wrote a query that counts ShopFlow order lines whose `product_id` has no matching product.\n\nHow should the team use it?",
+      "options": [
+        {
+          "key": "A",
+          "text": "As a data-quality gate in the pipeline: expect 0, and fail the build otherwise"
+        },
+        {
+          "key": "B",
+          "text": "Run it once a year during the audit"
+        },
+        {
+          "key": "C",
+          "text": "Show its result on the CEO's dashboard"
+        },
+        {
+          "key": "D",
+          "text": "Use it to delete the matching products"
+        }
+      ],
+      "answer": [
+        "A"
+      ],
+      "explanation": "An orphan check should return **0**. Wire it into the pipeline so a broken key **fails the build** instead of silently skewing a dashboard.",
+      "domain": "5",
+      "domain_name": "Dimensional modeling (facts & dimensions)",
+      "tags": [
+        "data-quality",
+        "referential-integrity"
+      ],
+      "difficulty": "medium"
     }
   ]
 }
