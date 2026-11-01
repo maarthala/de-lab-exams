@@ -2,6 +2,8 @@
   "schema_version": "1.1",
   "exam_id": "de-foundations",
   "source": "foundations",
+  "enabled": false,
+  "disabled_reason": "WIP",
   "questions": [
     {
       "id": "foundations-001",
