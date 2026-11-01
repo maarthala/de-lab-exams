@@ -27,7 +27,13 @@
       "answer": [
         "B"
       ],
-      "explanation": "A heavy analytical query on the OLTP database slows down the live app and is slow itself, because the database is laid out for small transactions. Moving the data into a separate OLAP system (the lakehouse) protects checkout. A, C and D all still run the heavy query on production.",
+      "explanation": "**Why B is right:** Production Postgres is an **OLTP** system, built for many tiny reads and writes. A big analytical scan competes with customers' transactions and is slow itself, because the database is laid out for small transactions, not big scans. Moving the data into a separate **OLAP** system (the lakehouse) is exactly why data engineering exists: analytics without breaking the business.\n\n**Why the others are wrong:**\n- **A** — The heavy scan still runs on the live database and competes with checkout; the course's answer is to move analytics off the OLTP system, not to tune it.\n- **C** — It only moves the problem to another hour; the heavy query still hits production, and the report must be refreshed daily anyway.\n- **D** — Read-only access doesn't make the scan lighter; it still runs on the production database.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › OLTP vs OLAP",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#oltp-vs-olap-the-core-distinction"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -60,7 +66,13 @@
       "answer": [
         "B"
       ],
-      "explanation": "**ELT** loads the raw data first and transforms it with the lakehouse's own compute, so the raw copy is kept. ETL transforms before loading and often keeps no raw copy.",
+      "explanation": "**Why B is right:** **ELT** loads the raw data first and then transforms it with the lakehouse's own compute, so the raw copy is kept. In the medallion pattern, Bronze *is* the loaded raw zone and Silver and Gold are the transform steps.\n\n**Why the others are wrong:**\n- **A** — ETL transforms before loading, on a separate engine, and often keeps no raw copy, which fails the first requirement.\n- **C** — OLTP is the kind of system that runs the business (the source), not a way of moving and transforming data.\n- **D** — A full load is an ingestion choice (copy everything vs only changes); it says nothing about where or when the transform happens.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › ETL vs ELT",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#etl-vs-elt-where-does-the-transform-happen"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -93,7 +105,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "A pipeline is **idempotent** when re-running it produces the same result. Retries and backfills then never create duplicates.",
+      "explanation": "**Why A is right:** The course defines a good pipeline as **idempotent**: re-running it produces the same result, with no duplicates. That makes retries and backfills safe.\n\n**Why the others are wrong:**\n- **B** — Incremental loading is about copying less data; a retried incremental load can still insert the same rows twice.\n- **C** — Lineage is governance: it records where data came from, but doesn't stop duplicates.\n- **D** — Streaming is about speed (continuous processing); it doesn't make re-runs safe.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 5 · Orchestrate & govern",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#5-orchestrate-govern"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -126,7 +144,17 @@
       "answer": [
         "B"
       ],
-      "explanation": "**Conforming schemas** maps each source's columns onto one shared model, so `cust_id`, `customer` and `CustomerID` all become one `customer_id`. Sources disagree, and reconciling them is a big part of the job.",
+      "explanation": "**Why B is right:** Sources disagree: each has its own schema and naming. **Conforming schemas** maps each source's columns onto **one shared model**, so `cust_id`, `customer` and `CustomerID` all become one `customer_id`.\n\n**Why the others are wrong:**\n- **A** — Deduplication collapses repeated records into one; it doesn't reconcile different column names across sources.\n- **C** — Aggregation rolls rows up into metrics; the columns must be conformed before you can aggregate them reliably.\n- **D** — Serving exposes finished data; the conflicting schemas have to be fixed earlier, in the transform.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 3 · Transform",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#3-transform"
+        },
+        {
+          "title": "Foundations › What is Data Engineering › A general data pipeline, end to end",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#a-general-data-pipeline-end-to-end"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -159,7 +187,13 @@
       "answer": [
         "C"
       ],
-      "explanation": "**CDC** is a smart form of incremental load: it reads the database's change log to capture every insert, update and delete as it happens. A full load copies the entire table every time.",
+      "explanation": "**Why C is right:** **CDC** is a smart form of incremental load: it reads the database's change log to capture every insert, update and delete as it happens.\n\n**Why the others are wrong:**\n- **A** — A full load copies the entire table every time, which is exactly what has become too slow.\n- **B** — A batch export is still a scheduled bulk copy; it doesn't read the change log or capture deletes as they happen.\n- **D** — Schema-on-read is about when a lake applies structure to files, not about getting changes out of a database.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 1 · Ingest",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#1-ingest-aka-extract"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -197,7 +231,17 @@
         "A",
         "B"
       ],
-      "explanation": "The landing zone keeps an exact copy of what arrived, so you can **re-run transforms** without hammering the live source again and **audit** what came in. It doesn't clean data or speed up dashboards by itself.",
+      "explanation": "**Why A and B are right:** The landing (raw) zone is an exact, untouched copy of what arrived. Keeping it lets you **reprocess without re-fetching** (never hammering the live source twice) and gives you an **audit trail**.\n\n**Why the others are wrong:**\n- **C** — Dashboard speed comes from Gold marts and serving, not from the raw landing zone.\n- **D** — The raw zone deliberately keeps data untouched, duplicates included; deduplication is a transform step.\n- **E** — The course doesn't present encryption as a purpose of the staging zone; its purpose is reprocessing and audit.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 2 · Store",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#2-store"
+        },
+        {
+          "title": "Foundations › What is Data Engineering › A general data pipeline, end to end",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#a-general-data-pipeline-end-to-end"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -234,7 +278,13 @@
           ]
         }
       ],
-      "explanation": "**Batch** processes data in chunks on a schedule and builds the daily, trustworthy picture. **Streaming** processes events continuously, so you can act in the moment.",
+      "explanation": "**Batch** processes data in chunks on a schedule; **streaming** processes events continuously as they arrive.\n\n- **Fraud check → Streaming** — it has to act in the moment, while the checkout happens; a nightly batch would be too late.\n- **Daily picture → Batch** — the course describes batch as what builds the daily, trustworthy picture of the business.\n- **Abandoned cart → Streaming** — rescuing a cart is acting in the moment, which needs continuous processing.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › Two speeds: batch and streaming",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#two-speeds-batch-and-streaming"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -279,7 +329,13 @@
           ]
         }
       ],
-      "explanation": "Governance means knowing **what** data you have (catalog), **where it came from** (lineage), **who may see it** (access control) and **whether it's correct** (data quality).",
+      "explanation": "Governance means knowing **what** data you have, **where it came from**, **who may see it** and **whether it's correct**.\n\n- **Request 1 → Catalog** — the catalog is the record of what data you have.\n- **Request 2 → Lineage** — lineage records where each piece of data came from.\n- **Request 3 → Access control (RBAC)** — access control (RBAC) decides who may see what.\n- **Request 4 → Data quality checks** — data quality checks decide whether the data is correct, and can stop a bad load.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 5 · Orchestrate & govern",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#5-orchestrate-govern"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -328,7 +384,17 @@
           ]
         }
       ],
-      "explanation": "Orchestration and governance wrap the **whole** flow; they aren't a stage at the end. The orchestrator runs a **DAG** of tasks in order, on a schedule, with retries, and **backfills** reprocess history.",
+      "explanation": "Orchestration runs the steps in the right **order**, on a **schedule**, with **retries** and **backfills**.\n\n- **Statement 1: No** — orchestration and governance aren't a stage at the end; they run **across** the whole flow.\n- **Statement 2: Yes** — the orchestrator runs a DAG (directed acyclic graph) of dependent tasks, in order.\n- **Statement 3: Yes** — orchestration includes retries when something fails and backfills to reprocess history.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 5 · Orchestrate & govern",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#5-orchestrate-govern"
+        },
+        {
+          "title": "Foundations › What is Data Engineering › A general data pipeline, end to end",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#a-general-data-pipeline-end-to-end"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -373,7 +439,13 @@
           ]
         }
       ],
-      "explanation": "Get data out of the sources (**ingest**), land it durably (**store**), clean and shape it (**transform**), then expose it (**serve**). Orchestration and governance run across all of these steps.",
+      "explanation": "The data engineer's job follows the same order on every platform; orchestration and governance wrap all of it.\n\n- **Step 1 → Ingest** — first, get data out of the source systems.\n- **Step 2 → Store** — land it durably and cheaply (object storage / a lakehouse).\n- **Step 3 → Transform** — clean, join and aggregate it into trustworthy shapes.\n- **Step 4 → Serve** — expose the finished data to BI, ML and applications.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › The five steps, in depth",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#the-five-steps-in-depth"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -406,7 +478,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Serving makes finished data usable: data marts and dashboards for BI, a **feature store** with clean features for ML, and APIs for apps. The raw zone holds untouched data, not model-ready features.",
+      "explanation": "**Why A is right:** Serving makes finished data usable for each audience. For ML, the course names **feature stores**: clean features for training and scoring models.\n\n**Why the others are wrong:**\n- **B** — The raw zone holds untouched data exactly as received; it isn't clean or ready for a model.\n- **C** — Connectors are ingestion adapters that read from sources; they don't serve finished data.\n- **D** — The OLTP database runs the business; analytics and ML belong on the separate, finished data.",
+      "references": [
+        {
+          "title": "Foundations › What is Data Engineering › 4 · Serve",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/what-is-de/#4-serve"
+        }
+      ],
       "domain": "1",
       "domain_name": "What is Data Engineering",
       "tags": [
@@ -439,7 +517,17 @@
       "answer": [
         "C"
       ],
-      "explanation": "A **lakehouse** keeps the lake's cheap, open storage and adds the warehouse's guarantees (ACID, MERGE, time travel, governance) through a table format and a catalog. That makes it good for both BI and ML.",
+      "explanation": "**Why C is right:** A **lakehouse** keeps the lake's cheap, open storage and adds the warehouse's guarantees (ACID, MERGE, time travel, governance) through a table format and a catalog. In the comparison table it is the only option that is good for **both BI and ML**.\n\n**Why the others are wrong:**\n- **A** — A warehouse is expensive, proprietary, and weak with raw, semi-structured or unstructured data such as JSON and images.\n- **B** — A plain lake is cheap and flexible, but has no ACID transactions and makes updates and MERGE hard.\n- **D** — The OLTP database runs the business; analytics belongs in a separate OLAP system.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Lakehouse (the synthesis)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#lakehouse-the-synthesis-what-youll-build"
+        },
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Comparing the three",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#comparing-the-three"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -471,7 +559,17 @@
       "answer": [
         "A"
       ],
-      "explanation": "On its own a lake is just files, and without discipline it rots into a **data swamp**. A **table format** (ACID, schema) and a **catalog** (discovery, access control) turn the files into reliable tables.",
+      "explanation": "**Why A is right:** Without discipline a lake rots into a **data swamp**: a pile of files nobody trusts. A **table format** adds ACID and schema enforcement, and a **catalog** adds discovery and access control; together with the storage they make a lakehouse.\n\n**Why the others are wrong:**\n- **B** — The OLTP database is for running the business, not for analytics over years of files.\n- **C** — A pile of untrusted files isn't a warehouse, and more storage doesn't add trust or structure.\n- **D** — A data mart is a focused, ready-to-query table for a team; deleting files doesn't make the rest trustworthy.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Data lake (the reaction)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#data-lake-the-reaction"
+        },
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Lakehouse (the synthesis)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#lakehouse-the-synthesis-what-youll-build"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -510,7 +608,17 @@
           ]
         }
       ],
-      "explanation": "ShopFlow's lakehouse maps one-to-one onto the three layers: **RustFS** (S3-compatible object storage), **Iceberg** (table format) and **Apache Polaris** (catalog with RBAC).",
+      "explanation": "ShopFlow's lakehouse maps one-to-one onto the three layers.\n\n- **RustFS → Object storage** — S3-compatible object storage: the cheap, open files.\n- **Iceberg → Open table format** — the table format that turns the files into real tables.\n- **Polaris → Catalog & governance** — the catalog: the namespace, access control (RBAC) and discovery.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › In this course",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#in-this-course"
+        },
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Lakehouse (the synthesis)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#lakehouse-the-synthesis-what-youll-build"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -545,7 +653,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Plain files can't change individual rows. A table format adds **updates, deletes and MERGE**, which are needed for GDPR deletes, corrections and CDC.",
+      "explanation": "**Why A is right:** The table format adds **updates, deletes and MERGE**: changing individual rows for GDPR deletes, corrections or CDC, which is impossible on plain files.\n\n**Why the others are wrong:**\n- **B** — Schema-on-read applies structure when you query; it can't change or remove rows.\n- **C** — Compression saves space; it doesn't let you delete a single row.\n- **D** — Separating storage and compute is about scaling and paying for each independently, not about changing rows.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › What the table format actually buys you",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#what-the-table-format-actually-buys-you"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -593,7 +707,13 @@
           ]
         }
       ],
-      "explanation": "A lake on its own has no ACID. A lakehouse keeps open formats and adds ACID through a table format. Classic warehouses **couple** storage and compute, so you pay for both together.",
+      "explanation": "These rows come from the course's comparison of warehouse, lake and lakehouse.\n\n- **Statement 1: No** — on its own a lake is just files: no ACID transactions.\n- **Statement 2: Yes** — the lakehouse keeps the lake's open files (Parquet) and adds table guarantees on top.\n- **Statement 3: No** — classic warehouses **couple** storage and compute, so you pay for both together.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Comparing the three",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#comparing-the-three"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -626,7 +746,17 @@
           ]
         }
       ],
-      "explanation": "A warehouse needs data to fit a fixed schema **before** loading (schema-on-write). A lake stores files of any shape and applies structure only **when you query** (schema-on-read).",
+      "explanation": "\"No schema at all, ever\" is wrong for both: a lake still applies structure, only later.\n\n- **Warehouse → Schema-on-write** — data must fit a rigid, pre-defined schema **before** it can be loaded.\n- **Lake → Schema-on-read** — files of any shape are stored, and structure is applied only **when you query**.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Data warehouse (the classic)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#data-warehouse-the-classic"
+        },
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Data lake (the reaction)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#data-lake-the-reaction"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -659,7 +789,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "**Time travel** queries a table as it was at an earlier version or time, so you can reproduce a report or roll back a bad load.",
+      "explanation": "**Why A is right:** **Time travel** queries a table as it was yesterday or at version N, so you can reproduce a report or roll back a bad load.\n\n**Why the others are wrong:**\n- **B** — Schema evolution safely changes a table's columns over time; it doesn't show earlier data.\n- **C** — Partitioning splits a table into folders by a column to read less; it keeps no history.\n- **D** — Schema-on-read decides when structure is applied; it can't show the table before the load.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › What the table format actually buys you",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#what-the-table-format-actually-buys-you"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -691,7 +827,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "The **catalog** is the directory of all tables plus governance: a `catalog.schema.table` namespace, access control, discovery and lineage. Query engines are interchangeable and sit above it.",
+      "explanation": "**Why A is right:** The **catalog** is the directory of all tables plus governance: a `catalog.schema.table` namespace, access control, discovery and lineage.\n\n**Why the others are wrong:**\n- **B** — Object storage holds the files; it has no table namespace or per-table permissions.\n- **C** — Parquet is how one file's bytes are laid out; it knows nothing about other tables or users.\n- **D** — Query engines are interchangeable and sit above the catalog; they use its namespace and rules rather than providing them.",
+      "references": [
+        {
+          "title": "Foundations › Lake vs Warehouse vs Lakehouse › Lakehouse (the synthesis)",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/lakehouse/#lakehouse-the-synthesis-what-youll-build"
+        }
+      ],
       "domain": "2",
       "domain_name": "Lake vs Warehouse vs Lakehouse",
       "tags": [
@@ -724,7 +866,17 @@
       "answer": [
         "B"
       ],
-      "explanation": "**Projection pushdown** reads only the columns a query needs, which is possible because Parquet is columnar. Predicate pushdown is different: it skips chunks that can't match a filter.",
+      "explanation": "**Why B is right:** **Projection pushdown** reads only the columns a query needs, which works because Parquet is columnar.\n\n**Why the others are wrong:**\n- **A** — Predicate pushdown skips chunks (row groups) that can't match a **filter**; it is about rows, not columns.\n- **C** — Partitioning splits a table into folders by a column value; it doesn't choose which columns are read.\n- **D** — Compaction merges many small files into fewer big ones.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › The common file formats",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#the-common-file-formats"
+        },
+        {
+          "title": "Foundations › File & table formats › Row-based vs columnar",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#row-based-vs-columnar"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -757,7 +909,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Each Parquet row group stores min/max statistics, so the engine can **skip** chunks that can't match the filter. This is predicate pushdown, or data skipping.",
+      "explanation": "**Why A is right:** Each Parquet chunk (row group) stores **min/max statistics**, so the engine can skip chunks that can't match the filter. This is predicate pushdown, or data skipping.\n\n**Why the others are wrong:**\n- **B** — Projection pushdown skips **columns** the query doesn't use, not chunks of rows.\n- **C** — Schema-on-read is about when structure is applied; it doesn't skip any data.\n- **D** — The files live in object storage; the source database's indexes play no part in reading them.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › The common file formats",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#the-common-file-formats"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -795,7 +953,13 @@
         "B",
         "D"
       ],
-      "explanation": "A table format (Delta or Iceberg) adds a transaction log, which gives atomic **MERGE** and **time travel**. Columnar storage, compression, row-group statistics and the embedded schema are Parquet's own features.",
+      "explanation": "**Why B and D are right:** A folder of Parquet files can't change a single row or say what the table looked like last week. A **table format** adds a transaction log that records each version, which gives atomic **MERGE** and **time travel**.\n\n**Why the others are wrong:**\n- **A** — Parquet is already columnar and compressed; the table format isn't needed for this.\n- **C** — Row-group statistics are part of Parquet itself.\n- **E** — Parquet files already carry their own schema.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › Table formats — turning files into a table",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#table-formats-turning-files-into-a-table"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -834,7 +998,17 @@
         "A",
         "B"
       ],
-      "explanation": "Parquet is **columnar**: a query reads only the columns it uses, and similar values sitting together **compress** far better. Being row-based is CSV's layout, and ACID comes from a table format, not from Parquet.",
+      "explanation": "**Why A and B are right:** Parquet is **columnar**: the query reads only `price` instead of every column (projection pushdown), and similar values sitting together **compress** far better, which means less storage and less I/O.\n\n**Why the others are wrong:**\n- **C** — Row-based is CSV's layout; it suits fetching whole records (OLTP), not scanning one column over millions of rows.\n- **D** — Parquet is typed and carries its own schema; it doesn't remove the schema.\n- **E** — ACID comes from a table format (Delta or Iceberg) on top of Parquet, not from Parquet itself.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › Row-based vs columnar",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#row-based-vs-columnar"
+        },
+        {
+          "title": "Foundations › File & table formats › The common file formats",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#the-common-file-formats"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -867,7 +1041,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Over-partitioning creates the **small-files problem**: millions of tiny files. Compaction (`OPTIMIZE`) merges them into fewer, bigger ones.",
+      "explanation": "**Why A is right:** Over-partitioning creates the **small-files problem**: millions of tiny files. Compaction (`OPTIMIZE`) merges them into fewer, bigger ones.\n\n**Why the others are wrong:**\n- **B** — Nothing changed in the columns; the problem is the number of files, not the schema.\n- **C** — CSV would make reads slower, not faster, and doesn't reduce the number of files.\n- **D** — Orphan keys and Unknown members belong to dimensional modeling; they have nothing to do with file counts.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › One more term: partitioning",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#one-more-term-partitioning"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -901,7 +1081,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "**UniForm** publishes Iceberg metadata for the same Delta files, so one physical table is readable as Delta (Spark) and as Iceberg (Trino). That is how this course writes its tables.",
+      "explanation": "**Why A is right:** **UniForm** publishes Iceberg metadata for the same Delta files, so one physical table is readable as Delta (Spark) and as Iceberg (Trino). This course writes its Delta tables with UniForm enabled.\n\n**Why the others are wrong:**\n- **B** — CSV loses the table format entirely: no ACID, no MERGE, no time travel, and slower reads.\n- **C** — A second copy is exactly what the team wants to avoid; UniForm needs no copy.\n- **D** — Partitioning changes how files are laid out, not which engines can read the table.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › The main table formats",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#the-main-table-formats"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -947,7 +1133,13 @@
           ]
         }
       ],
-      "explanation": "**Parquet** is the analytics default (columnar, typed, compressed). **JSON** fits nested, semi-structured data and APIs. **Avro** is row-based with a schema, for write-heavy and streaming records. **CSV** is for tiny data and human eyeballing.",
+      "explanation": "These come from the course's table of common file formats.\n\n- **Analytics → Parquet** — columnar, typed and compressed: the lakehouse default for analytics.\n- **API events → JSON** — fits nested, semi-structured data, APIs and events.\n- **Streaming records → Avro** — row-based with a schema and compression, made for write-heavy and streaming records.\n- **Small file → CSV** — untyped and uncompressed, but fine for tiny data and human eyeballing.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › The common file formats",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#the-common-file-formats"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -996,7 +1188,13 @@
           ]
         }
       ],
-      "explanation": "A table format adds a transaction log over Parquet files: each write appends a new version recording the schema and the exact files. A plain folder of Parquet files can't update a single row atomically.",
+      "explanation": "A table format's transaction log is the table's \"brain\": schema, versions, file list and statistics.\n\n- **Statement 1: Yes** — the data files themselves are just Parquet; the table format adds a log over them.\n- **Statement 2: Yes** — each write adds a new version (snapshot) recording the schema and the exact files.\n- **Statement 3: No** — a plain folder can't update or delete a single row, or add data atomically.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › Table formats — turning files into a table",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#table-formats-turning-files-into-a-table"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -1034,7 +1232,13 @@
           ]
         }
       ],
-      "explanation": "**Delta Lake** keeps a JSON log in `_delta_log`. **Iceberg** uses snapshots and manifests and is fully engine-agnostic. **Hudi** focuses on streaming upserts.",
+      "explanation": "These are the three main table formats.\n\n- **Description 1 → Delta Lake** — Delta keeps a JSON log in `_delta_log` and is Databricks-native.\n- **Description 2 → Apache Iceberg** — Iceberg uses snapshots and manifests and is fully engine-agnostic.\n- **Description 3 → Apache Hudi** — Hudi is the third option, focused on streaming upserts.",
+      "references": [
+        {
+          "title": "Foundations › File & table formats › The main table formats",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/formats/#the-main-table-formats"
+        }
+      ],
       "domain": "3",
       "domain_name": "File & table formats",
       "tags": [
@@ -1073,7 +1277,21 @@
           ]
         }
       ],
-      "explanation": "**Bronze** keeps the raw data as it arrived, **Silver** makes it clean and conformed, and **Gold** shapes it for BI and ML.",
+      "explanation": "Quality and trust rise at each layer, while the data gets smaller and more focused.\n\n- **Raw copy → Bronze** — Bronze keeps everything, even bad or duplicate rows.\n- **Clean model → Silver** — Silver is where raw becomes reliable: the single source of truth.\n- **Business marts → Gold** — Gold holds small, aggregated, business-ready tables for BI and ML.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Bronze — raw",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#bronze-raw"
+        },
+        {
+          "title": "Foundations › Medallion architecture › Silver — clean & conformed",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#silver-clean-conformed"
+        },
+        {
+          "title": "Foundations › Medallion architecture › Gold — business-ready",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#gold-business-ready"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1105,7 +1323,17 @@
       "answer": [
         "B"
       ],
-      "explanation": "Bronze keeps **everything**, even bad or duplicate rows, so it is the replay buffer. Fix the logic and rebuild Silver and Gold from Bronze; no re-ingest is needed.",
+      "explanation": "**Why B is right:** Bronze keeps **everything** so you can always reprocess: if a transform bug is found months later, you rebuild Silver and Gold from Bronze without re-fetching from the source. Bronze is the replay buffer.\n\n**Why the others are wrong:**\n- **A** — Yesterday's Gold was built with the same bug, and Silver would still be wrong.\n- **C** — Re-fetching from the sources is exactly what keeping Bronze avoids.\n- **D** — Hand patches can't be traced or repeated, and Silver stays wrong.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Bronze — raw",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#bronze-raw"
+        },
+        {
+          "title": "Foundations › Medallion architecture › Why three layers?",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#why-three-layers"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1138,7 +1366,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Medallion also helps access control: analysts are granted **Gold** only, engineers work in **Silver**, and **Bronze** stays restricted.",
+      "explanation": "**Why A is right:** Access control is one of the benefits of three layers: grant analysts **Gold** only, let engineers work in **Silver**, and keep **Bronze** restricted.\n\n**Why the others are wrong:**\n- **B** — Bronze is raw and untrusted, with duplicates and bad rows, and stays restricted.\n- **C** — Giving everyone everything throws away the access-control benefit of the layers.\n- **D** — This is backwards: Gold is the layer made for analysts and dashboards.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Why three layers?",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#why-three-layers"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1186,7 +1420,17 @@
           ]
         }
       ],
-      "explanation": "Bronze keeps everything plus a little ingestion metadata. **Silver** is the single source of truth; Gold holds aggregated, business-ready marts.",
+      "explanation": "Each layer has one job.\n\n- **Statement 1: Yes** — Bronze keeps everything, so you can reprocess later.\n- **Statement 2: Yes** — Bronze adds a little ingestion metadata, such as when a row arrived and which file or source it came from.\n- **Statement 3: No** — **Silver** is the single source of truth; Gold holds aggregated, business-ready marts built from it.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Bronze — raw",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#bronze-raw"
+        },
+        {
+          "title": "Foundations › Medallion architecture › Silver — clean & conformed",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#silver-clean-conformed"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1220,7 +1464,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Silver is where updates and late-arriving records are **merged** (`MERGE`, a table-format feature). Bronze stays append-only.",
+      "explanation": "**Why A is right:** Silver is where updates and late-arriving records are **merged** into the trusted tables, using `MERGE` (a table-format feature).\n\n**Why the others are wrong:**\n- **B** — Bronze is append-only: it keeps everything, including old versions, for reprocessing.\n- **C** — Summing both versions would double-count; Gold is built from the already-merged Silver.\n- **D** — Analytics doesn't change the source system; the source is what you read from.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Silver — clean & conformed",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#silver-clean-conformed"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1254,7 +1504,13 @@
       "answer": [
         "C"
       ],
-      "explanation": "**Gold** holds aggregated, purpose-built tables (marts) that answer business questions directly, such as `daily_sales` net of returns.",
+      "explanation": "**Why C is right:** **Gold** holds aggregated, purpose-built tables (marts) that answer business questions directly. ShopFlow's `daily_sales` net of returns is one of them.\n\n**Why the others are wrong:**\n- **A** — Bronze is the raw, append-only copy of the sources.\n- **B** — Silver is clean, row-level data (one row per order line), not an aggregated answer.\n- **D** — The staging zone holds untouched data as it arrived.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Gold — business-ready",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#gold-business-ready"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1292,7 +1548,13 @@
           ]
         }
       ],
-      "explanation": "The same three tiers work for streaming: **Bronze** captures the raw stream, **Silver** cleans and sessionises it, and **Gold** keeps live aggregates. It runs continuously instead of on a schedule.",
+      "explanation": "The same three tiers apply to streaming; they just run continuously instead of on a schedule.\n\n- **Task 1 → Bronze** — Bronze captures the raw event stream as it arrives.\n- **Task 2 → Silver** — Silver cleans and sessionises the events.\n- **Task 3 → Gold** — Gold maintains live aggregates, such as orders per minute or a fraud signal.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Medallion works for streaming too",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#medallion-works-for-streaming-too"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1330,7 +1592,17 @@
         "A",
         "B"
       ],
-      "explanation": "Three layers is the common default, not a law: teams may add a landing zone before Bronze or extra Gold marts. **Medallion** is Databricks' own term. Raw copies belong in Bronze, and analysts get Gold.",
+      "explanation": "**Why A and B are right:** Three layers is a guideline, not a law: teams sometimes add a **landing zone before Bronze** or extra Gold marts. **Medallion (Bronze/Silver/Gold) is Databricks' own term**, recommended on every platform.\n\n**Why the others are wrong:**\n- **C** — The course says to use as many tiers as the data's messiness justifies, no more and no less.\n- **D** — Raw copies belong in Bronze; Gold is small and aggregated.\n- **E** — Analysts are granted Gold; engineers work in Silver.",
+      "references": [
+        {
+          "title": "Foundations › Medallion architecture › Why three layers?",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#why-three-layers"
+        },
+        {
+          "title": "Foundations › Medallion architecture › Concept",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/medallion/#concept"
+        }
+      ],
       "domain": "4",
       "domain_name": "Medallion architecture",
       "tags": [
@@ -1374,7 +1646,17 @@
           ]
         }
       ],
-      "explanation": "Numbers go in **facts**, context goes in **dimensions**. The measure you sum (revenue) is in the fact; every \"by …\" is a dimension attribute: category on the product, region on the customer, month on the date.",
+      "explanation": "**Numbers go in facts; context goes in dimensions.** The measure you want is in the fact, and every \"by …\" is a dimension.\n\n- **Box 1 → fact_sales** — revenue is a measure you `SUM`, so it belongs in the fact.\n- **Box 2 → dim_product** — category describes the product (what).\n- **Box 3 → dim_customer** — region describes the customer (who / where).\n- **Box 4 → dim_date** — the month comes from the date dimension (when), computed once.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › The core idea",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#the-core-idea"
+        },
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › The two roles, side by side",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#the-two-roles-side-by-side"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1408,7 +1690,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "This is the **fan-out** trap: joining a one-row-per-order table to a one-row-per-line table counts an order-level number once per line. One fact table = one grain; order-level and line-level facts need **two** fact tables.",
+      "explanation": "**Why A is right:** This is the **fan-out** trap. Joining a one-row-per-**order** table to a one-row-per-**line** table counts an order-level number once per line. One fact table = one grain; if you need both levels, that's two fact tables.\n\n**Why the others are wrong:**\n- **B** — A date dimension makes calendar questions easy; it doesn't cause or fix double counting.\n- **C** — A total is additive; the problem is that the join repeated it, not how it adds up.\n- **D** — Snowflaking dimensions adds joins and doesn't change the grain mix-up.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Grain — decide it first",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#grain-decide-it-first-before-anything-else"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1441,7 +1729,13 @@
       "answer": [
         "C"
       ],
-      "explanation": "A percentage is **non-additive**: never sum or average it. Keep its parts as additive measures and divide at query time: `sum(profit) / sum(revenue)`.",
+      "explanation": "**Why C is right:** A percentage is **non-additive**: never sum or average it. Store its parts as additive measures and compute the ratio at query time: `sum(profit) / sum(revenue)`.\n\n**Why the others are wrong:**\n- **A** — An average of percentages ignores how big each line is; the course says to use `sum(profit) / sum(revenue)`, not `avg(margin_pct)`.\n- **B** — Summing percentages produces a meaningless number.\n- **D** — The maximum is one line's margin, not the month's.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Measures aren't all equal — additivity",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#measures-arent-all-equal-additivity"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1474,7 +1768,13 @@
       "answer": [
         "B"
       ],
-      "explanation": "Inventory on hand is **semi-additive**: it adds up across products but **not across time**. Take the latest value or an average for the period.",
+      "explanation": "**Why B is right:** Inventory on hand is **semi-additive**: it adds up across some dimensions, but **not across time**. You don't add Monday's stock to Tuesday's; take the latest value or an average.\n\n**Why the others are wrong:**\n- **A** — Summing daily stock counts the same units again every day.\n- **C** — The number of days isn't an inventory figure.\n- **D** — Multiplying by products has no meaning for stock on hand.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Measures aren't all equal — additivity",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#measures-arent-all-equal-additivity"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1507,7 +1807,13 @@
       "answer": [
         "C"
       ],
-      "explanation": "An `INNER JOIN` silently drops the orphaned line: its revenue vanishes and **nothing errors**. A `LEFT JOIN` would instead put it in a \"(null)\" bucket.",
+      "explanation": "**Why C is right:** With an `INNER JOIN`, the orphaned line is **silently dropped**: its revenue vanishes from every product report, the totals come out too low, and **nothing errors**.\n\n**Why the others are wrong:**\n- **A** — Nothing errors; that is what makes orphan keys dangerous.\n- **B** — That happens with a `LEFT JOIN`, not an `INNER JOIN`.\n- **D** — No engine invents dimension rows; integrity has to be guarded in the pipeline.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Dimensional integrity — and why it's critical",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#dimensional-integrity-and-why-its-critical"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1540,7 +1846,13 @@
       "answer": [
         "B"
       ],
-      "explanation": "Never leave a foreign key NULL. Point missing keys at a dedicated **Unknown member**, so facts never orphan, the total still adds up, and the revenue is visibly attributed to \"Unknown\".",
+      "explanation": "**Why B is right:** Point missing or unknown keys at a dedicated **Unknown member** (a surrogate key like `-1`, name \"Unknown\"). Facts never orphan, the total still adds up, and the mystery revenue is visibly attributed to \"Unknown\" instead of disappearing.\n\n**Why the others are wrong:**\n- **A** — The course says never to leave a foreign key NULL; reports would show a \"(null)\" bucket or lose the line.\n- **C** — Dropping lines makes the totals too low, which is what finance wants to avoid.\n- **D** — An `INNER JOIN` silently drops lines whose key has no dimension row.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Dimensional integrity — and why it's critical",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#dimensional-integrity-and-why-its-critical"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1573,7 +1885,13 @@
       "answer": [
         "B"
       ],
-      "explanation": "The March sale stored `customer_sk = 41`, so it forever joins to **Delhi**. Surrogate keys with SCD Type 2 rows are what make \"revenue by the city the customer lived in at the time\" possible.",
+      "explanation": "**Why B is right:** The March 2024 sale stored `customer_sk = 41`, so it forever joins to **Delhi**. Surrogate keys with SCD Type 2 rows are what make \"revenue by the city the customer lived in at the time\" possible.\n\n**Why the others are wrong:**\n- **A** — Mumbai is row 88, which only sales from July 2024 onwards store.\n- **C** — Each sale stores exactly one surrogate key, so it joins to exactly one row.\n- **D** — The fact joins on the surrogate key, not the natural key; the natural key alone could hold only one city.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Surrogate keys",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#surrogate-keys"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1606,7 +1924,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "A **date dimension** has one row per day with year, quarter, month, weekend and holiday flags computed **once**. Date questions become plain `GROUP BY`s with one shared definition of \"Q1\".",
+      "explanation": "**Why A is right:** A **date dimension** has one row per day with year, quarter, month, weekend and holiday flags computed **once**. Date questions become plain `GROUP BY`s with one shared definition of \"Q1\", \"weekend\" and \"holiday\".\n\n**Why the others are wrong:**\n- **B** — Dates are context (when), not events with measures, so they belong in a dimension.\n- **C** — Partitioning splits files to read less; it doesn't give reports a shared calendar.\n- **D** — Analytics belongs off the OLTP system, and a view doesn't pre-compute the calendar.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › The date dimension",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#the-date-dimension"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1650,7 +1974,17 @@
           ]
         }
       ],
-      "explanation": "**Slice** fixes one dimension to one value; **dice** picks a sub-range on several dimensions; **roll-up** aggregates up a hierarchy (coarser); **drill-down** goes to finer detail.",
+      "explanation": "Everyday OLAP verbs are moves on the cube, and each maps to plain SQL.\n\n- **Query 1 → Slice** — fixes one dimension to a single value.\n- **Query 2 → Dice** — picks a sub-range on several dimensions.\n- **Query 3 → Roll-up** — aggregates **up** the hierarchy, to coarser rows.\n- **Query 4 → Drill-down** — goes **down** to finer detail.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Why a dimension table is called a \"dimension\"",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#why-a-dimension-table-is-called-a-dimension"
+        },
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Hierarchies",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#hierarchies"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1689,7 +2023,17 @@
         "A",
         "B"
       ],
-      "explanation": "A **star** keeps each dimension flat, so queries need fewer joins, and small flat dimensions broadcast cheaply. Prefer the star unless a dimension is genuinely huge or shared in a way that forces normalization.",
+      "explanation": "**Why A and B are right:** A **star** keeps each dimension flat (category as a column right on `dim_product`), so queries need **fewer joins**, and small flat dimensions **broadcast** cheaply. Prefer the star unless a dimension is genuinely huge or shared in a way that forces normalization.\n\n**Why the others are wrong:**\n- **C** — A star always has a fact table at its centre.\n- **D** — The course says nothing of the kind; modeling is engine-agnostic.\n- **E** — Storing each fact exactly once is the OLTP (normalized) goal, which a star deliberately gives up for read speed.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Hierarchies",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#hierarchies"
+        },
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Why denormalizing into a star pays off",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#why-denormalizing-into-a-star-pays-off"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1722,7 +2066,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "A **conformed dimension** is a single dimension reused by every fact, so \"customer\" means the same thing in every report and numbers reconcile across the business.",
+      "explanation": "**Why A is right:** A **conformed dimension** is a single dimension reused by every fact (sales, returns, support), so \"customer\" means the same thing in every report and the numbers reconcile.\n\n**Why the others are wrong:**\n- **B** — Dates aren't the problem; the two customer definitions are.\n- **C** — Snowflaking adds joins; it doesn't make the two definitions agree.\n- **D** — Mixing grains in one fact table is the classic bug the course warns against.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Why denormalizing into a star pays off",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#why-denormalizing-into-a-star-pays-off"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1780,7 +2130,17 @@
           ]
         }
       ],
-      "explanation": "Facts record immutable events: they are append-only and tall & narrow. Dimensions describe things: they are short & wide and mostly change through **updates**. A customer moving changes the dimension, not the old facts.",
+      "explanation": "Facts record what happened; dimensions describe the things involved.\n\n- **Statement 1: Yes** — facts hold one row per event, with measures and foreign keys: millions of rows, few columns.\n- **Statement 2: No** — facts are immutable records of events: append-only, never edited; the move changes the dimension.\n- **Statement 3: Yes** — there are relatively few things but many ways to describe them.\n- **Statement 4: Yes** — the lifecycle of a dimension is mostly updates; facts are mostly inserts.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › The two roles, side by side",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#the-two-roles-side-by-side"
+        },
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Why a fact table is called a \"fact\"",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#why-a-fact-table-is-called-a-fact"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1813,7 +2173,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "Load dimensions before facts whenever possible. For a **late-arriving dimension**, stage the fact against the Unknown member, then re-point it once the dimension row arrives.",
+      "explanation": "**Why A is right:** For a **late-arriving dimension**, stage the fact against the **Unknown member** and re-point it once the dimension row lands. The general rule is to load dimensions before facts, so a fact never references a row that doesn't exist yet.\n\n**Why the others are wrong:**\n- **B** — Deleting real sales loses revenue from every total.\n- **C** — The course says never to leave a foreign key NULL.\n- **D** — Holding back all facts delays every report; the Unknown member keeps the pipeline running correctly.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Dimensional integrity — and why it's critical",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#dimensional-integrity-and-why-its-critical"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
@@ -1846,7 +2212,13 @@
       "answer": [
         "A"
       ],
-      "explanation": "An orphan check should return **0**. Wire it into the pipeline so a broken key **fails the build** instead of silently skewing a dashboard.",
+      "explanation": "**Why A is right:** An orphan check should return **0**. Wire it into the pipeline as a data-quality gate, so a broken key **fails the build** instead of silently skewing a dashboard.\n\n**Why the others are wrong:**\n- **B** — Once a year is far too late: a broken key quietly skews every report in between.\n- **C** — The check guards the data before it reaches dashboards; executives don't need its count.\n- **D** — The orphans are order lines with no product; there are no matching products to delete.",
+      "references": [
+        {
+          "title": "Foundations › Dimensional modeling (facts & dimensions) › Dimensional integrity — and why it's critical",
+          "url": "https://maarthala.github.io/data-engineering-lab/unit1/dimensional-modeling/#dimensional-integrity-and-why-its-critical"
+        }
+      ],
       "domain": "5",
       "domain_name": "Dimensional modeling (facts & dimensions)",
       "tags": [
